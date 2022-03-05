@@ -15,3 +15,8 @@ class Board:
         self.finishRow = math.floor(self.rows / 2)
         self.finishColumn = math.floor(self.columns / 4 * 3)
         self.nodes[self.finishRow][self.finishColumn] = Node(self.finishRow, self.finishColumn, "finish", math.inf)
+
+    def create_labyrinth_board(self):
+        for column in range (self.columns):
+            self.nodes[0][column].state = "wall"
+            self.nodes[self.rows-1][column].state = "wall"

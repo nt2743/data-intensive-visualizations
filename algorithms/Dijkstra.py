@@ -39,3 +39,11 @@ def dijkstra (board):
             return visited_nodes
         update_unvisited_neighbors(closest_node, board.nodes)
     return visited_nodes
+
+def shortest_path(board):
+    nodes_shortest_path = []
+    current_node = board.nodes[board.finishRow][board.finishColumn]
+    while current_node != None:
+        nodes_shortest_path.append(current_node)
+        current_node = current_node.previousNode
+    return nodes_shortest_path
