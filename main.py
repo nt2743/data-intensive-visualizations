@@ -147,8 +147,10 @@ def visualize_dijkstra(board, nodes_in_order):
         root.after(20,visualize_dijkstra,board, nodes_in_order)
 
 def reset_board(board):
-    board = Board(20,40)
-    draw_board(board)
+    global main_board
+    canvas.delete("all")
+    main_board = Board(20,40)
+    draw_board(main_board)
 
 
 canvas.tag_bind("node", "<Button-1>", begin_walls)
