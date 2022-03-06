@@ -1,5 +1,6 @@
 from Node import Node
 import math
+import random
 
 class Board:
     def __init__(self, rows, columns):
@@ -16,7 +17,17 @@ class Board:
         self.finishColumn = math.floor(self.columns / 4 * 3)
         self.nodes[self.finishRow][self.finishColumn] = Node(self.finishRow, self.finishColumn, "finish", math.inf)
 
-    def create_labyrinth_board(self):
+    def create_maze_board(self):
         for column in range (self.columns):
             self.nodes[0][column].state = "wall"
             self.nodes[self.rows-1][column].state = "wall"
+
+    def create_random_maze_board(self):
+        for row in range(self.rows):
+            for column in range(self.columns):
+                if self.nodes[row][column].state != "start" and self.nodes[row][column].state != "finish":
+                    random_number = random.uniform(0, 1)
+                    if random_number > 0.6:
+                        self.nodes[row][column].state = "wall"
+                    else:
+                        self.nodes[row][column].state = "node"

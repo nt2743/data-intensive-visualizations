@@ -7,14 +7,14 @@ import time
 
 root = tkinter.Tk()
 root.title("Pathfinding Visualization")
-root.geometry("1000x600")
+root.geometry("1000x700")
 
 canvas = Canvas(root, width=1000, height=500)
 
-rows = 20
-columns = 40
-
 main_board = Board(20, 40)
+
+#represents the current program state
+state = "editable"
 
 def draw_board(board):
     for row in range(len(board.nodes)):
@@ -41,11 +41,12 @@ mouseClicked = False
 def begin_walls(event):
     global mouseClicked
     mouseClicked = True
-    mark_as_wall(event)
+    if state == "editable":
+        mark_as_wall(event)
 
 def build_walls(event):
     global mouseClicked
-    if mouseClicked and not (is_in_start(event.x, event.y) or is_in_finish(event.x, event.y)):
+    if mouseClicked and not (is_in_start(event.x, event.y) or is_in_finish(event.x, event.y)) and state == "editable":
         mark_as_wall(event)
 
 def complete_walls(event):
@@ -62,11 +63,12 @@ def mark_as_wall(event):
 def begin_delete_walls(event):
     global mouseClicked
     mouseClicked = True
-    mark_as_node(event)
+    if state == "editable":
+        mark_as_node(event)
 
 def delete_walls(event):
     global mouseClicked
-    if mouseClicked and not (is_in_start(event.x, event.y) or is_in_finish(event.x, event.y)):
+    if mouseClicked and not (is_in_start(event.x, event.y) or is_in_finish(event.x, event.y)) and state == "editable":
         mark_as_node(event)
 
 def complete_delete_walls(event):
@@ -86,12 +88,12 @@ def pick(event):
 
 def drag_start(event):
     global mouseClicked
-    if mouseClicked and not is_in_start(event.x, event.y):
+    if mouseClicked and not is_in_start(event.x, event.y) and state == "editable":
         mark_as_new_start_or_end(event, "start")
 
-def drag_end(event):
+def drag_finish(event):
     global mouseClicked
-    if mouseClicked and not is_in_finish(event.x, event.y):
+    if mouseClicked and not is_in_finish(event.x, event.y) and state == "editable":
         mark_as_new_start_or_end(event, "finish")
 
 def drop(event):
@@ -141,22 +143,27 @@ def is_in_finish(x, y):
     return False
 
 def visualize_dijkstra(board, nodes_in_order):
+    global state
+    state = "visualizing"
     #for i in range(len(nodes_in_order)):
     node = nodes_in_order.pop(0)
     if (node.state == "node"):
-        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="blue", outline="black", tags="visualized")
+        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="cyan", outline="black", tags="visualized")
     if len(nodes_in_order) > 0:
         root.after(10,visualize_dijkstra, board, nodes_in_order)
-    else :
+    else:
         visualize_shortest_path(board, shortest_path(board))
 
 def visualize_shortest_path(board, nodes_shortest_path):
+    global state
     node = nodes_shortest_path.pop(0)
     if (node.state == "node"):
         canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="yellow",
                             outline="black", tags="visualized")
     if len(nodes_shortest_path) > 0:
         root.after(10,visualize_shortest_path, board, nodes_shortest_path)
+    else:
+        state = "editable"
 
 def reset_board(board):
     global main_board
@@ -164,9 +171,14 @@ def reset_board(board):
     main_board = Board(20,40)
     draw_board(main_board)
 
-def create_labyrinth():
+def create_maze():
     reset_board(main_board)
-    main_board.create_labyrinth_board()
+    main_board.create_maze_board()
+    draw_board(main_board)
+
+def create_random_maze():
+    reset_board(main_board)
+    main_board.create_random_maze_board()
     draw_board(main_board)
 
 canvas.tag_bind("node", "<Button-1>", begin_walls)
@@ -182,7 +194,7 @@ canvas.tag_bind("start", "<Motion>", drag_start)
 canvas.tag_bind("start", "<ButtonRelease-1>", drop)
 
 canvas.tag_bind("finish", "<Button-1>", pick)
-canvas.tag_bind("finish", "<Motion>", drag_end)
+canvas.tag_bind("finish", "<Motion>", drag_finish)
 canvas.tag_bind("finish", "<ButtonRelease-1>", drop)
 
 canvas.pack()
@@ -196,7 +208,10 @@ clear_board.pack()
 clear_paths = tkinter.Button(root, text="Wege entfernen", command=lambda: draw_board(main_board))
 clear_paths.pack()
 
-labyrinth = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: create_labyrinth())
-labyrinth.pack()
+maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: create_maze())
+maze.pack()
+
+random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", command=lambda: create_random_maze())
+random_maze.pack()
 
 root.mainloop()
