@@ -41,7 +41,7 @@ mouseClicked = False
 def begin_walls(event):
     global mouseClicked
     mouseClicked = True
-    if state == "editable":
+    if not (is_in_start(event.x, event.y) or is_in_finish(event.x, event.y)) and state == "editable":
         mark_as_wall(event)
 
 def build_walls(event):
@@ -63,7 +63,7 @@ def mark_as_wall(event):
 def begin_delete_walls(event):
     global mouseClicked
     mouseClicked = True
-    if state == "editable":
+    if not (is_in_start(event.x, event.y) or is_in_finish(event.x, event.y)) and state == "editable":
         mark_as_node(event)
 
 def delete_walls(event):
@@ -145,9 +145,8 @@ def is_in_finish(x, y):
 def visualize_dijkstra(board, nodes_in_order):
     global state
     state = "visualizing"
-    #for i in range(len(nodes_in_order)):
     node = nodes_in_order.pop(0)
-    if (node.state == "node"):
+    if node.state == "node":
         canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="cyan", outline="black", tags="visualized")
     if len(nodes_in_order) > 0:
         root.after(10,visualize_dijkstra, board, nodes_in_order)
@@ -157,7 +156,7 @@ def visualize_dijkstra(board, nodes_in_order):
 def visualize_shortest_path(board, nodes_shortest_path):
     global state
     node = nodes_shortest_path.pop(0)
-    if (node.state == "node"):
+    if node.state == "node":
         canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="yellow",
                             outline="black", tags="visualized")
     if len(nodes_shortest_path) > 0:
