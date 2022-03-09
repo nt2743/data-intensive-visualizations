@@ -1,5 +1,4 @@
 import math
-from Board import Board
 
 def get_unvisited_neighbors(node, nodes):
   neighbors = []
@@ -25,7 +24,6 @@ def check_if_done(node, finish_row, finish_column):
 def dijkstra (board):
     visited_nodes = []
     unvisited_nodes = [j for sub in board.nodes for j in sub]
-    closest_node = None
     while len(unvisited_nodes) > 0:
         unvisited_nodes.sort(key=lambda node: node.distance)
         closest_node = unvisited_nodes.pop(0)

@@ -17,10 +17,7 @@ class Board:
         self.finishColumn = math.floor(self.columns / 4 * 3)
         self.nodes[self.finishRow][self.finishColumn] = Node(self.finishRow, self.finishColumn, "finish", math.inf)
 
-    def create_maze_board(self):
-        for column in range (self.columns):
-            self.nodes[0][column].state = "wall"
-            self.nodes[self.rows-1][column].state = "wall"
+
 
     def create_random_maze_board(self):
         for row in range(self.rows):

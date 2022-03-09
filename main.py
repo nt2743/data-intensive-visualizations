@@ -3,7 +3,7 @@ from Board import Board
 import tkinter
 from tkinter import *
 from algorithms.Dijkstra import dijkstra, shortest_path
-import time
+from mazes import Recursive_division
 
 root = tkinter.Tk()
 root.title("Pathfinding Visualization")
@@ -142,12 +142,17 @@ def is_in_finish(x, y):
         return True
     return False
 
+#TODO: name = "animate" to make it work for algorithms and mazes
+def visualize (board, nodes_in_order):
+    draw_board(board)
+    visualize_dijkstra(board, nodes_in_order)
+
 def visualize_dijkstra(board, nodes_in_order):
     global state
     state = "visualizing"
     node = nodes_in_order.pop(0)
     if node.state == "node":
-        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="cyan", outline="black", tags="visualized")
+        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="cyan", outline="black", tags="node")
     if len(nodes_in_order) > 0:
         root.after(10,visualize_dijkstra, board, nodes_in_order)
     else:
@@ -170,10 +175,17 @@ def reset_board(board):
     main_board = Board(20,40)
     draw_board(main_board)
 
-def create_maze():
-    reset_board(main_board)
-    main_board.create_maze_board()
-    draw_board(main_board)
+def visualize_maze(board, created_maze):
+     #draw_board(board)
+     create_maze(board, created_maze)
+
+def create_maze(board, created_maze):
+    node = created_maze.pop(0)
+    if node.state == "wall":
+        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="black",
+                                outline="black", tags="wall")
+    if len(created_maze) > 0:
+        root.after(20, create_maze, board, created_maze)
 
 def create_random_maze():
     reset_board(main_board)
@@ -198,7 +210,7 @@ canvas.tag_bind("finish", "<ButtonRelease-1>", drop)
 
 canvas.pack()
 
-startAlgorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: visualize_dijkstra(main_board, dijkstra(main_board)))
+startAlgorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: visualize(main_board, dijkstra(main_board)))
 startAlgorithm.pack()
 
 clear_board = tkinter.Button(root, text="Zurücksetzen", command=lambda: reset_board(main_board))
@@ -207,10 +219,13 @@ clear_board.pack()
 clear_paths = tkinter.Button(root, text="Wege entfernen", command=lambda: draw_board(main_board))
 clear_paths.pack()
 
-maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: create_maze())
+maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: visualize_maze(main_board, Recursive_division.create_maze_board(main_board, 0, main_board.rows, 0, main_board.columns)))
 maze.pack()
 
 random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", command=lambda: create_random_maze())
 random_maze.pack()
+
+draw_bord = tkinter.Button(root, text="Board zeichnen", command=lambda: draw_board(main_board))
+draw_bord.pack()
 
 root.mainloop()
