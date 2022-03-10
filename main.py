@@ -176,8 +176,9 @@ def reset_board(board):
     draw_board(main_board)
 
 def visualize_maze(board, created_maze):
-     #draw_board(board)
-     create_maze(board, created_maze)
+    board.create_border()
+    create_maze(board, created_maze)
+    #draw_board(board)
 
 def create_maze(board, created_maze):
     node = created_maze.pop(0)
@@ -219,7 +220,7 @@ clear_board.pack()
 clear_paths = tkinter.Button(root, text="Wege entfernen", command=lambda: draw_board(main_board))
 clear_paths.pack()
 
-maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: visualize_maze(main_board, Recursive_division.create_maze_board(main_board, 0, main_board.rows, 0, main_board.columns)))
+maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: visualize_maze(main_board, Recursive_division.create_maze_board(main_board, 2, main_board.rows - 3, 2, main_board.columns - 3, 0)))
 maze.pack()
 
 random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", command=lambda: create_random_maze())
