@@ -2,7 +2,7 @@ import random, math
 
 
 def create_maze_board(board, row_start, row_end, column_start, column_end, maze):
-    if row_end < row_start or column_end < column_start:
+    if row_end < row_start-1 or column_end < column_start-1:
         return
 
     # decide if the wall will be horizontal or vertical

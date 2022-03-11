@@ -7,7 +7,7 @@ from mazes import Recursive_division
 
 root = tkinter.Tk()
 root.title("Pathfinding Visualization")
-root.geometry("1000x700")
+root.geometry("1000x800")
 
 canvas = Canvas(root, width=1000, height=500)
 
@@ -219,6 +219,7 @@ draw_bord.pack()
 animation_speed_label = Label(root, text="Geschwindigkeit der Animation")
 animation_speed_label.pack()
 animation_speed_slider = Scale(root, from_=0, to=20, orient=HORIZONTAL)
+animation_speed_slider.set(10)
 animation_speed_slider.pack()
 
 root.mainloop()
