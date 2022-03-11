@@ -29,7 +29,7 @@ def draw_board(board):
                 case "finish":
                     color = "green"
                 case "wall":
-                    color = "black"
+                    color = "grey"
 
             canvas.create_rectangle(column * 25, row * 25, column * 25 + 25, row * 25 + 25,
                                             fill=color, outline="black", tags=node_state)
@@ -56,7 +56,7 @@ def complete_walls(event):
 def mark_as_wall(event):
     canvas.create_rectangle(math.floor(event.x / 25) * 25, math.floor(event.y / 25) * 25,
                             math.floor(event.x / 25) * 25 + 25, math.floor(event.y / 25) * 25 + 25,
-                            fill="black", outline="black", tags="wall")
+                            fill="grey", outline="black", tags="wall")
     main_board.nodes[math.floor(event.y / 25)][math.floor(event.x / 25)].state = "wall"
 
 # delete walls
@@ -88,17 +88,21 @@ def pick(event):
 
 def drag_start(event):
     global mouseClicked
-    if mouseClicked and not is_in_start(event.x, event.y) and state == "editable":
+    if mouseClicked and not is_in_start(event.x, event.y) and state != "visualizing":
         mark_as_new_start_or_end(event, "start")
 
 def drag_finish(event):
     global mouseClicked
-    if mouseClicked and not is_in_finish(event.x, event.y) and state == "editable":
+    if mouseClicked and not is_in_finish(event.x, event.y) and state != "visualizing":
         mark_as_new_start_or_end(event, "finish")
 
 def drop(event):
     global mouseClicked
     mouseClicked = False
+    if state == "visualized":
+        main_board.reset_after_algorithm()
+        draw_board(main_board)
+        animate(main_board, "dijkstra")
 
 def mark_as_new_start_or_end(event, start_or_end):
     if main_board.nodes[math.floor(event.y / 25)][math.floor(event.x / 25)].state != "node":
@@ -147,8 +151,9 @@ def animate (board, animation_type):
         draw_board(board)
         visualize(board, dijkstra(main_board), "cyan", "node")
     if animation_type == "recursive division maze":
-        main_board.create_border()
-        visualize(board, Recursive_division.create_maze_board(main_board, 2, main_board.rows - 3, 2, main_board.columns - 3), "black", "wall")
+        reset_board(board)
+        border = main_board.create_border()
+        visualize(board, Recursive_division.create_maze_board(main_board, 2, main_board.rows - 3, 2, main_board.columns - 3, border), "grey", "wall")
 
 def visualize(board, nodes_in_order, color, node_state):
     global state
@@ -157,25 +162,18 @@ def visualize(board, nodes_in_order, color, node_state):
     if node.state == node_state:
         canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill=color, outline="black", tags="wall")
     if len(nodes_in_order) > 0:
-        root.after(10,visualize, board, nodes_in_order, color, node_state)
+        root.after(animation_speed_slider.get(), visualize, board, nodes_in_order, color, node_state)
     else:
-        state = "editable"
         if color == "cyan":
             visualize(board, shortest_path(board), "yellow", "node")
+        if color == "yellow":
+            state = "visualized"
 
 def reset_board(board):
     global main_board
     canvas.delete("all")
     main_board = Board(20,40)
     draw_board(main_board)
-
-def create_maze(board, created_maze):
-    node = created_maze.pop(0)
-    if node.state == "wall":
-        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="black",
-                                outline="black", tags="wall")
-    if len(created_maze) > 0:
-        root.after(20, create_maze, board, created_maze)
 
 def create_random_maze():
     reset_board(main_board)
@@ -217,5 +215,10 @@ random_maze.pack()
 
 draw_bord = tkinter.Button(root, text="Board zeichnen", command=lambda: draw_board(main_board))
 draw_bord.pack()
+
+animation_speed_label = Label(root, text="Geschwindigkeit der Animation")
+animation_speed_label.pack()
+animation_speed_slider = Scale(root, from_=0, to=20, orient=HORIZONTAL)
+animation_speed_slider.pack()
 
 root.mainloop()

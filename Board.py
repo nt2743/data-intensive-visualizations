@@ -18,12 +18,18 @@ class Board:
         self.nodes[self.finishRow][self.finishColumn] = Node(self.finishRow, self.finishColumn, "finish", math.inf)
 
     def create_border(self):
+        border = []
         for row in range(self.rows):
             self.nodes[row][0].state = "wall"
+            border.append(self.nodes[row][0])
             self.nodes[row][self.columns-1].state = "wall"
+            border.append(self.nodes[row][self.columns-1])
         for column in range(self.columns):
             self.nodes[0][column].state = "wall"
+            border.append(self.nodes[0][column])
             self.nodes[self.rows-1][column].state = "wall"
+            border.append(self.nodes[self.rows-1][column])
+        return border
 
     def create_random_maze_board(self):
         for row in range(self.rows):
@@ -34,3 +40,12 @@ class Board:
                         self.nodes[row][column].state = "wall"
                     else:
                         self.nodes[row][column].state = "node"
+
+    def reset_after_algorithm(self):
+        for row in range(self.rows):
+            for column in range(self.columns):
+                self.nodes[row][column].isVisited = False
+                self.nodes[row][column].previousNode = None
+                self.nodes[row][column].distance = math.inf
+
+        self.nodes[self.startRow][self.startColumn].distance = 0

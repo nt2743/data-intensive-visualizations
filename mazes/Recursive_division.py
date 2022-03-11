@@ -1,10 +1,7 @@
 import random, math
 
 
-maze = []
-
-def create_maze_board(board, row_start, row_end, column_start, column_end):
-    global maze
+def create_maze_board(board, row_start, row_end, column_start, column_end, maze):
     if row_end < row_start or column_end < column_start:
         return
 
@@ -23,14 +20,12 @@ def create_maze_board(board, row_start, row_end, column_start, column_end):
         random_end_point = column_end
 
     # for building the wall
-    possible_walls = []
-    possible_walls.append(random_start_point)
+    possible_walls = [random_start_point]
     for number in range(random_start_point, random_end_point, 2):
         possible_walls.append(number)
 
     # for picking the open path
-    possible_paths = []
-    possible_paths.append(random_start_open_spot - 1)
+    possible_paths = [random_start_open_spot - 1]
     for number in range(random_start_open_spot - 1, random_end_open_spot + 1, 2):
         possible_paths.append(number)
 
@@ -40,41 +35,31 @@ def create_maze_board(board, row_start, row_end, column_start, column_end):
 
     open_spot = possible_paths[random_path_index]
 
-    #### 1 19 1 39
-    #random_spot_to_build_wall = random.randint(math.floor(random_start_point / 2), math.floor(random_end_point / 2)) * 2
-    ####random_spot_to_build_wall = random.randrange(random_start_point, random_end_point, 2)
-
-    #open_spot = math.floor(random.uniform(random_start_open_spot, random_end_open_spot))
-
     # build the wall
     for node in range(random_start_open_spot - 1, random_end_open_spot + 2):
         if is_horizontal:
-            if not (board.nodes[random_spot_to_build_wall][node].state == "start" or board.nodes[random_spot_to_build_wall][node].state == "finish"):
+            if not is_surrounding_start_or_finish(board, random_spot_to_build_wall, node):
                 board.nodes[random_spot_to_build_wall][node].state = "wall"
                 maze.append(board.nodes[random_spot_to_build_wall][node])
         else:
-            if not (board.nodes[node][random_spot_to_build_wall].state == "start" or board.nodes[node][random_spot_to_build_wall].state == "finish"):
+            if not is_surrounding_start_or_finish(board, node, random_spot_to_build_wall):
                 board.nodes[node][random_spot_to_build_wall].state = "wall"
                 maze.append(board.nodes[node][random_spot_to_build_wall])
 
     # recursion
-    #if is_horizontal:
-        #board.nodes[random_spot_to_build_wall][open_spot].state = "node"
-        #print("path:", open_spot)
-        #create_maze_board(board, row_start, random_spot_to_build_wall - 1, column_start, column_end, iteration)
-        #create_maze_board(board, random_spot_to_build_wall + 1, row_end, column_start, column_end, iteration)
-    #else:
-        #board.nodes[open_spot][random_spot_to_build_wall].state = "node"
-        #print("path:", open_spot)
-        #create_maze_board(board, row_start, row_end, column_start, random_spot_to_build_wall - 1, iteration)
-        #create_maze_board(board, row_start, row_end, random_spot_to_build_wall + 1, column_end, iteration)
-
     if is_horizontal:
         board.nodes[random_spot_to_build_wall][open_spot].state = "node"
-        create_maze_board(board, row_start, random_spot_to_build_wall - 2, column_start, column_end)
-        create_maze_board(board, random_spot_to_build_wall + 2, row_end, column_start, column_end)
+        create_maze_board(board, row_start, random_spot_to_build_wall - 2, column_start, column_end, maze)
+        create_maze_board(board, random_spot_to_build_wall + 2, row_end, column_start, column_end, maze)
     else:
         board.nodes[open_spot][random_spot_to_build_wall].state = "node"
-        create_maze_board(board, row_start, row_end, column_start, random_spot_to_build_wall - 2)
-        create_maze_board(board, row_start, row_end, random_spot_to_build_wall + 2, column_end)
+        create_maze_board(board, row_start, row_end, column_start, random_spot_to_build_wall - 2, maze)
+        create_maze_board(board, row_start, row_end, random_spot_to_build_wall + 2, column_end, maze)
     return maze
+
+def is_surrounding_start_or_finish(board, current_row, current_column):
+    for row in range (current_row - 1, current_row + 2):
+        for column in range(current_column - 1, current_column + 2):
+            if board.nodes[row][column].state == "start" or board.nodes[row][column].state == "finish":
+                return True
+    return False
