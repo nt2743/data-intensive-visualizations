@@ -3,9 +3,7 @@ import random, math
 
 maze = []
 
-def create_maze_board(board, row_start, row_end, column_start, column_end, iteration):
-    iteration+=1
-    print(iteration)
+def create_maze_board(board, row_start, row_end, column_start, column_end):
     global maze
     if row_end < row_start or column_end < column_start:
         return
@@ -38,10 +36,7 @@ def create_maze_board(board, row_start, row_end, column_start, column_end, itera
 
     random_wall_index = math.floor(random.uniform(0, len(possible_walls)))
     random_path_index = math.floor(random.uniform(0, len(possible_paths)))
-    try:
-        random_spot_to_build_wall = possible_walls[random_wall_index]
-    except:
-        print("doesnt work")
+    random_spot_to_build_wall = possible_walls[random_wall_index]
 
     open_spot = possible_paths[random_path_index]
 
@@ -76,10 +71,10 @@ def create_maze_board(board, row_start, row_end, column_start, column_end, itera
 
     if is_horizontal:
         board.nodes[random_spot_to_build_wall][open_spot].state = "node"
-        create_maze_board(board, row_start, random_spot_to_build_wall - 2, column_start, column_end, iteration)
-        create_maze_board(board, random_spot_to_build_wall + 2, row_end, column_start, column_end, iteration)
+        create_maze_board(board, row_start, random_spot_to_build_wall - 2, column_start, column_end)
+        create_maze_board(board, random_spot_to_build_wall + 2, row_end, column_start, column_end)
     else:
         board.nodes[open_spot][random_spot_to_build_wall].state = "node"
-        create_maze_board(board, row_start, row_end, column_start, random_spot_to_build_wall - 2, iteration)
-        create_maze_board(board, row_start, row_end, random_spot_to_build_wall + 2, column_end, iteration)
+        create_maze_board(board, row_start, row_end, column_start, random_spot_to_build_wall - 2)
+        create_maze_board(board, row_start, row_end, random_spot_to_build_wall + 2, column_end)
     return maze

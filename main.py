@@ -142,43 +142,32 @@ def is_in_finish(x, y):
         return True
     return False
 
-#TODO: name = "animate" to make it work for algorithms and mazes
-def visualize (board, nodes_in_order):
-    draw_board(board)
-    visualize_dijkstra(board, nodes_in_order)
+def animate (board, animation_type):
+    if animation_type == "dijkstra":
+        draw_board(board)
+        visualize(board, dijkstra(main_board), "cyan", "node")
+    if animation_type == "recursive division maze":
+        main_board.create_border()
+        visualize(board, Recursive_division.create_maze_board(main_board, 2, main_board.rows - 3, 2, main_board.columns - 3), "black", "wall")
 
-def visualize_dijkstra(board, nodes_in_order):
+def visualize(board, nodes_in_order, color, node_state):
     global state
     state = "visualizing"
     node = nodes_in_order.pop(0)
-    if node.state == "node":
-        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="cyan", outline="black", tags="node")
+    if node.state == node_state:
+        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill=color, outline="black", tags="wall")
     if len(nodes_in_order) > 0:
-        root.after(10,visualize_dijkstra, board, nodes_in_order)
-    else:
-        visualize_shortest_path(board, shortest_path(board))
-
-def visualize_shortest_path(board, nodes_shortest_path):
-    global state
-    node = nodes_shortest_path.pop(0)
-    if node.state == "node":
-        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill="yellow",
-                            outline="black", tags="visualized")
-    if len(nodes_shortest_path) > 0:
-        root.after(10,visualize_shortest_path, board, nodes_shortest_path)
+        root.after(10,visualize, board, nodes_in_order, color, node_state)
     else:
         state = "editable"
+        if color == "cyan":
+            visualize(board, shortest_path(board), "yellow", "node")
 
 def reset_board(board):
     global main_board
     canvas.delete("all")
     main_board = Board(20,40)
     draw_board(main_board)
-
-def visualize_maze(board, created_maze):
-    board.create_border()
-    create_maze(board, created_maze)
-    #draw_board(board)
 
 def create_maze(board, created_maze):
     node = created_maze.pop(0)
@@ -211,7 +200,7 @@ canvas.tag_bind("finish", "<ButtonRelease-1>", drop)
 
 canvas.pack()
 
-startAlgorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: visualize(main_board, dijkstra(main_board)))
+startAlgorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: animate(main_board, "dijkstra"))
 startAlgorithm.pack()
 
 clear_board = tkinter.Button(root, text="Zurücksetzen", command=lambda: reset_board(main_board))
@@ -220,7 +209,7 @@ clear_board.pack()
 clear_paths = tkinter.Button(root, text="Wege entfernen", command=lambda: draw_board(main_board))
 clear_paths.pack()
 
-maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: visualize_maze(main_board, Recursive_division.create_maze_board(main_board, 2, main_board.rows - 3, 2, main_board.columns - 3, 0)))
+maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: animate(main_board, "recursive division maze"))
 maze.pack()
 
 random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", command=lambda: create_random_maze())
