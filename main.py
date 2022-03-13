@@ -3,6 +3,7 @@ from Board import Board
 import tkinter
 from tkinter import *
 from algorithms.Dijkstra import dijkstra, shortest_path
+from algorithms.AStar import a_star
 from mazes import Recursive_division
 
 root = tkinter.Tk()
@@ -12,6 +13,8 @@ root.geometry("1000x800")
 canvas = Canvas(root, width=1000, height=500)
 
 main_board = Board(20, 40)
+
+node_information = ""
 
 #represents the current program state
 state = "editable"
@@ -111,45 +114,50 @@ def mark_as_new_start_or_end(event, start_or_end):
     new_row = math.floor(event.y / 25)
     new_column = math.floor(event.x / 25)
     if start_or_end == "start":
-        previous_row = main_board.startRow
-        previous_column = main_board.startColumn
-        main_board.startRow = new_row
-        main_board.startColumn = new_column
+        previous_row = main_board.start_row
+        previous_column = main_board.start_column
+        main_board.start_row = new_row
+        main_board.start_column = new_column
         color = "red"
         distance = 0
     else:
-        previous_row = main_board.finishRow
-        previous_column = main_board.finishColumn
-        main_board.finishRow = new_row
-        main_board.finishColumn = new_column
+        previous_row = main_board.finish_row
+        previous_column = main_board.finish_column
+        main_board.finish_row = new_row
+        main_board.finish_column = new_column
         color = "green"
         distance = math.inf
     canvas.create_rectangle(previous_column * 25, previous_row * 25,
                             previous_column * 25 + 25, previous_row * 25 + 25,
                             fill="white", outline="black", tags="node")
     main_board.nodes[previous_row][previous_column].state = "node"
-    main_board.nodes[previous_row][previous_column].distance = math.inf
+    main_board.nodes[previous_row][previous_column].distance_to_start = math.inf
 
     canvas.create_rectangle(new_column * 25, new_row * 25,
                             new_column * 25 + 25, new_row * 25 + 25,
                             fill=color, outline="black", tags=start_or_end)
     main_board.nodes[new_row][new_column].state = start_or_end
-    main_board.nodes[new_row][new_column].distance = distance
+    main_board.nodes[new_row][new_column].distance_to_start = distance
 
 def is_in_start(x, y):
-    if main_board.startRow * 25 <= y < main_board.startRow * 25 + 25 and main_board.startColumn * 25 <= x < main_board.startColumn * 25 + 25:
+    if main_board.start_row * 25 <= y < main_board.start_row * 25 + 25 and main_board.start_column * 25 <= x < main_board.start_column * 25 + 25:
         return True
     return False
 
 def is_in_finish(x, y):
-    if main_board.finishRow * 25 <= y < main_board.finishRow * 25 + 25 and main_board.finishColumn * 25 <= x < main_board.finishColumn * 25 + 25:
+    if main_board.finish_row * 25 <= y < main_board.finish_row * 25 + 25 and main_board.finish_column * 25 <= x < main_board.finish_column * 25 + 25:
         return True
     return False
 
 def animate (board, animation_type):
-    if animation_type == "dijkstra":
+    if animation_type == "Dijkstra":
         draw_board(board)
+        main_board.reset_after_algorithm()
         visualize(board, dijkstra(main_board), "cyan", "node")
+    if animation_type == "A*":
+        draw_board(board)
+        main_board.reset_after_algorithm()
+        visualize(board, a_star(main_board), "cyan", "node")
     if animation_type == "recursive division maze":
         reset_board(board)
         border = main_board.create_border()
@@ -160,7 +168,7 @@ def visualize(board, nodes_in_order, color, node_state):
     state = "visualizing"
     node = nodes_in_order.pop(0)
     if node.state == node_state:
-        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill=color, outline="black", tags="wall")
+        canvas.create_rectangle(node.column * 25, node.row * 25, node.column * 25 + 25, node.row * 25 + 25, fill=color, outline="black", tags=node_state)
     if len(nodes_in_order) > 0:
         root.after(animation_speed_slider.get(), visualize, board, nodes_in_order, color, node_state)
     else:
@@ -180,6 +188,18 @@ def create_random_maze():
     main_board.create_random_maze_board()
     draw_board(main_board)
 
+def skip_animation():
+    animation_speed_slider.set(0)
+
+def display_node_information(event):
+    global node_information
+    current_row = math.floor(event.y / 25)
+    current_column = math.floor(event.x / 25)
+    node = main_board.nodes[current_row][current_column]
+    node_information = "row: " + str(node.row) + " column: " + str(node.column) + " distance_to_start: " + str(node.distance_to_start) + " distance_to_finish: " + str(node.distance_to_finish)
+    print(node_information)
+
+
 canvas.tag_bind("node", "<Button-1>", begin_walls)
 canvas.tag_bind("node", "<Motion>", build_walls)
 canvas.tag_bind("node", "<ButtonRelease-1>", complete_walls)
@@ -196,10 +216,20 @@ canvas.tag_bind("finish", "<Button-1>", pick)
 canvas.tag_bind("finish", "<Motion>", drag_finish)
 canvas.tag_bind("finish", "<ButtonRelease-1>", drop)
 
+canvas.tag_bind("node" or "start" or "finish" or "", "<Enter>", display_node_information)
 canvas.pack()
 
-startAlgorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: animate(main_board, "dijkstra"))
-startAlgorithm.pack()
+node_information_label = Label(root, text=node_information)
+node_information_label.pack()
+
+start_algorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: animate(main_board, algorithms.get()))
+start_algorithm.pack()
+
+algorithms = StringVar(root)
+algorithms.set("Dijkstra") # default value
+
+choose_algorithm = OptionMenu(root, algorithms, "Dijkstra", "A*")
+choose_algorithm.pack()
 
 clear_board = tkinter.Button(root, text="Zurücksetzen", command=lambda: reset_board(main_board))
 clear_board.pack()
@@ -221,5 +251,8 @@ animation_speed_label.pack()
 animation_speed_slider = Scale(root, from_=0, to=20, orient=HORIZONTAL)
 animation_speed_slider.set(10)
 animation_speed_slider.pack()
+
+skip_animation_button = tkinter.Button(root, text="Animation überspringen", command=lambda: skip_animation())
+skip_animation_button.pack()
 
 root.mainloop()

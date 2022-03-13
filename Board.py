@@ -9,13 +9,16 @@ class Board:
         self.nodes = [[Node(row, column, "node", math.inf) for column in
                       range(self.columns)] for row in range(self.rows)]
 
-        self.startRow = math.floor(self.rows / 2)
-        self.startColumn = math.floor(self.columns / 4)
-        self.nodes[self.startRow][self.startColumn] = Node(self.startRow, self.startColumn, "start", 0)
+        self.start_row = math.floor(self.rows / 2)
+        self.start_column = math.floor(self.columns / 4)
+        self.nodes[self.start_row][self.start_column] = Node(self.start_row, self.start_column, "start", 0)
 
-        self.finishRow = math.floor(self.rows / 2)
-        self.finishColumn = math.floor(self.columns / 4 * 3)
-        self.nodes[self.finishRow][self.finishColumn] = Node(self.finishRow, self.finishColumn, "finish", math.inf)
+        self.finish_row = math.floor(self.rows / 2)
+        self.finish_column = math.floor(self.columns / 4 * 3)
+        self.nodes[self.finish_row][self.finish_column] = Node(self.finish_row, self.finish_column, "finish", math.inf)
+
+    def calculate_distance_to_finish(self, node):
+        node.distance_to_finish = math.sqrt(((self.finish_row+12.5) - (node.row+12.5)) ** 2 + ((self.finish_column+12.5) - (node.column+12.5)) ** 2)
 
     def create_border(self):
         border = []
@@ -46,6 +49,7 @@ class Board:
             for column in range(self.columns):
                 self.nodes[row][column].isVisited = False
                 self.nodes[row][column].previousNode = None
-                self.nodes[row][column].distance = math.inf
+                self.nodes[row][column].distance_to_start = math.inf
+                self.nodes[row][column].distance_to_finish = math.inf
 
-        self.nodes[self.startRow][self.startColumn].distance = 0
+        self.nodes[self.start_row][self.start_column].distance_to_start = 0
