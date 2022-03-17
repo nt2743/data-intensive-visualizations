@@ -18,7 +18,8 @@ class Board:
         self.nodes[self.finish_row][self.finish_column] = Node(self.finish_row, self.finish_column, "finish", math.inf)
 
     def calculate_distance_to_finish(self, node):
-        node.distance_to_finish = math.sqrt(((self.finish_row+12.5) - (node.row+12.5)) ** 2 + ((self.finish_column+12.5) - (node.column+12.5)) ** 2)
+        #node.distance_to_finish = math.sqrt((self.finish_row - node.row) ** 2 + (self.finish_column - node.column) ** 2)
+        node.distance_to_finish = math.fabs(self.finish_row - node.row) + math.fabs(self.finish_column - node.column)
 
     def create_border(self):
         border = []

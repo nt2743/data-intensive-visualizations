@@ -12,4 +12,6 @@ class Node:
         self.distance_to_start = distance_to_start
 
     def __lt__(self, other):
+        #if (self.distance_to_finish + self.distance_to_start) == (other.distance_to_finish + other.distance_to_start):
         return self.distance_to_finish < other.distance_to_finish
+        #return (self.distance_to_finish + self.distance_to_start) < (other.distance_to_finish + other.distance_to_start)
