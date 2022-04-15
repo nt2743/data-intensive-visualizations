@@ -3,7 +3,7 @@ from Board import Board
 import tkinter
 from tkinter import *
 from algorithms.Algorithm import shortest_path
-from algorithms.Dijkstra import dijkstra
+from algorithms.Dijkstra import update_unvisited_neighbors
 from algorithms.A_Star import update_neighbors
 from mazes import Recursive_division
 from enum import Enum
@@ -14,10 +14,6 @@ root = tkinter.Tk()
 root.title("Pathfinding Visualization")
 root.state("zoomed") # window full-screen
 state = "editable" # represents the current program state
-
-class State(Enum):
-    EDITABLE = 0
-
 
 canvas_height = 500
 canvas_width = 1530
@@ -31,10 +27,12 @@ color_dictionary = {
     "node": "white",
     "wall": "grey",
     "start": "red",
-    "finish": "#7CFC00",
+    "finish": "green",
     "visited": "cyan",
-    "shortest path": "yellow"
+    "path": "yellow"
 }
+
+show_information = False
 
 def draw_board(board):
     for row in range(len(board.nodes)):
@@ -42,6 +40,8 @@ def draw_board(board):
             node_state = board.nodes[row][column].state
             canvas.create_rectangle(column * node_size, row * node_size, column * node_size + node_size, row * node_size + node_size,
                                             fill=color_dictionary[node_state], outline="black", tags=node_state)
+            if show_information:
+                show_information_of_node(board, board.nodes[row][column])
 
 draw_board(main_board)
 
@@ -58,7 +58,7 @@ def begin_wall_building(event):
     global state
     try: current_node = main_board.nodes[math.floor(event.y / node_size)][math.floor(event.x / node_size)]
     except: return
-    if current_node.state != "node" or state == "visualizing": return
+    if not (current_node.state == "node" or current_node.state == "visited" or current_node.state == "path") or state == "visualizing": return
     state = "wall building"
     change_node_state(current_node, "wall")
 
@@ -66,12 +66,13 @@ def build_walls(event):
     global state
     try: current_node = main_board.nodes[math.floor(event.y / node_size)][math.floor(event.x / node_size)]
     except: return
-    if current_node.state != "node" or state != "wall building": return
+    if not (current_node.state == "node" or current_node.state == "visited" or current_node.state == "path") or state != "wall building": return
     change_node_state(current_node, "wall")
 
 def complete_wall_building(event):
     global state
-    state = "editable"
+    if state == "wall building":
+        state = "editable"
 
 # delete walls
 def begin_wall_deleting(event):
@@ -91,11 +92,13 @@ def delete_walls(event):
 
 def complete_wall_deleting(event):
     global state
-    state = "editable"
+    if state == "wall deleting":
+        state = "editable"
 
 # move start and end
 def pick(event):
     global state
+    if state == "visualizing": return
     state = "moving start or finish"
 
 def drag_start(event):
@@ -108,6 +111,7 @@ def drag_start(event):
     change_node_state(current_start, "node")
     main_board.start_row = current_node.row
     main_board.start_column = current_node.column
+    main_board.start_node = current_node
 
 def drag_finish(event):
     global state
@@ -119,63 +123,114 @@ def drag_finish(event):
     change_node_state(current_finish, "node")
     main_board.finish_row = current_node.row
     main_board.finish_column = current_node.column
+    main_board.finish_node = current_node
 
 def drop(event):
     global state
-    state = "editable"
+    if state == "moving start or finish":
+        state = "editable"
 
-
-
-def a_star(board, priority_queue, open_set_hash, count):
-    if priority_queue.empty():
+# algorithms
+next_step = False
+def dijkstra (board, unvisited_nodes):
+    unvisited_nodes.sort(key=lambda node: node.distance_to_start)
+    current_node = unvisited_nodes.pop(0)
+    # no possible way to finish
+    if current_node.distance_to_start == math.inf:
         return
-    current_node = priority_queue.get()[3]
-    open_set_hash.remove(current_node)
+
     # check if done
-    if current_node.row == board.finish_row and current_node.column == board.finish_column:
-        root.after(animation_speed_slider.get(), shortest_path, board, canvas, root, node_size, animation_speed_slider, current_node)
+    if current_node == board.finish_node:
+        root.after(animation_speed_slider.get(), shortest_path, board, board.finish_node, 0)
         return
-    if current_node.state == "node":
-        canvas.create_rectangle(current_node.column * node_size, current_node.row * node_size, current_node.column * node_size + node_size,
-                            current_node.row * node_size + node_size, fill="cyan", outline="black", tags="node")
-    current_node.is_visited = True
-    priority_queue, count = update_neighbors(current_node, board, priority_queue, open_set_hash, count)
-    if animation_mode == "complete":
-        root.after(animation_speed_slider.get(), a_star, board, priority_queue, open_set_hash, count)
-    else:
-        root.after(0, a_star, board, priority_queue, open_set_hash, count)
 
-def shortest_path(board, canvas, root, node_size, animation_speed_slider, current_node):
-    if current_node is None:
-        return
+    # draw visited node
     if current_node.state == "node":
+        current_node.state = "visited"
         canvas.create_rectangle(current_node.column * node_size, current_node.row * node_size,
                             current_node.column * node_size + node_size,
-                            current_node.row * node_size + node_size, fill="yellow", outline="black", tags="node")
-    root.after(animation_speed_slider.get(), shortest_path, board, canvas, root, node_size, animation_speed_slider, current_node.previous_node)
+                            current_node.row * node_size + node_size, fill=color_dictionary[current_node.state], outline="black", tags=current_node.state)
+    if show_information:
+        show_information_of_node(board, current_node)
 
-calculated_nodes = []
+    # update nodes
+    current_node.is_visited = True
+    update_unvisited_neighbors(current_node, board)
+
+    # recursive step
+    if animation_mode == "complete":
+        root.after(animation_speed_slider.get(), dijkstra, board, unvisited_nodes)
+    else:
+        root.after(0, dijkstra, board, unvisited_nodes)
+
+def a_star(board, priority_queue, open_set_hash):
+    # no possible way to finish
+    if priority_queue.empty():
+        return
+
+    current_node = priority_queue.get()[2]
+    open_set_hash.remove(current_node)
+
+    # check if done
+    if current_node == board.finish_node:
+        root.after(animation_speed_slider.get(), shortest_path, board, board.finish_node, 0)
+        return
+
+
+    # update nodes
+    current_node.is_visited = True
+    priority_queue = update_neighbors(current_node, board, priority_queue, open_set_hash)
+
+    # draw visited node
+    if current_node.state == "node":
+        current_node.state = "visited"
+        canvas.create_rectangle(current_node.column * node_size, current_node.row * node_size, current_node.column * node_size + node_size,
+                            current_node.row * node_size + node_size, fill=color_dictionary[current_node.state], outline="black", tags=current_node.state)
+        if show_information:
+            show_information_of_node(board, current_node)
+
+
+    # recursive step
+    if animation_mode == "complete":
+        root.after(animation_speed_slider.get(), a_star, board, priority_queue, open_set_hash)
+    elif animation_mode == "step by step":
+        root.after(1000, a_star, board, priority_queue, open_set_hash)
+    else:
+        root.after(0, a_star, board, priority_queue, open_set_hash)
+
+def shortest_path(board, current_node, length):
+    global state, animation_mode
+    length += 1
+    path_length.set("Weglänge: " + str(length))
+    previous_node = current_node.previous_node
+    if previous_node == board.start_node:
+        state = "visualized"
+        animation_mode = "complete"
+        return
+    previous_node.state = "path"
+    canvas.create_rectangle(previous_node.column * node_size, previous_node.row * node_size,
+                            previous_node.column * node_size + node_size,
+                            previous_node.row * node_size + node_size,  fill=color_dictionary[previous_node.state], outline="black", tags=previous_node.state)
+    if show_information:
+        show_information_of_node(board, previous_node)
+    root.after(20, shortest_path, board, previous_node, length)
 
 def animate_algorithm (board):
-    global state, calculated_nodes, animation_mode
+    global state
+    state = "visualizing"
     path_length.set("Weglänge: ...")
     main_board.reset_after_algorithm()
     draw_board(board)
     start_node = board.nodes[board.start_row][board.start_column]
-    if algorithms.get() == "Dijkstra":
-        calculated_nodes = dijkstra(main_board)
-        visualize(board, calculated_nodes, "cyan", "node")
-    if algorithms.get() == "A*":
-        count = 0
-        priority_queue = PriorityQueue()
-        priority_queue.put((start_node.absolute_weight, start_node.distance_to_finish, count, start_node))
-        open_set_hash = {start_node}
-        a_star(main_board, priority_queue, open_set_hash, count)
-    state = "visualized"
-    animation_mode = "complete"
-
-def step_forward(board):
-    visualize(board, calculated_nodes, "cyan", "node")
+    match algorithms.get():
+        case "Dijkstra":
+            unvisited_nodes = [j for sub in board.nodes for j in sub]
+            dijkstra(main_board, unvisited_nodes)
+        case "A*":
+            priority_queue = PriorityQueue()
+            priority_queue.put((start_node.absolute_weight, start_node.distance_to_finish, start_node))
+            open_set_hash = {start_node}
+            a_star(main_board, priority_queue, open_set_hash)
 
 def animate_maze(board, animation_type):
     global state
@@ -219,22 +274,50 @@ def visualize (board, nodes_in_order, color, node_state):
                 root.after(0, visualize, board, nodes_in_order, color, node_state)
     else:
         if color == "cyan":
-            nodes_shortest_path = shortest_path(board)
+            nodes_shortest_path = shortest_path(board, board.finish_node)
             path_length.set("Weglänge: " + str(len(nodes_shortest_path)))
             visualize(board, nodes_shortest_path, "yellow", "node")
         state = "visualized"
         if animation_mode == "skip":
             animation_mode = "complete"
 
-show_information = False
-def set_show_animation():
+def set_show_information():
     global animation_mode, show_information
     if show_information:
         show_information_text.set("Nodeinformationen anzeigen")
         show_information = False
+        draw_board(main_board)
     else:
         show_information_text.set("Nodeinformationen verbergen")
         show_information = True
+        draw_board(main_board)
+
+def show_information_of_node(board, node):
+    if node.state == "visited" or node.state == "path":
+        canvas.create_text(node.column * node_size + (node_size / 4), node.row * node_size + (node_size / 5),
+                           font=("", math.floor(node_size * 10 / 36)), text=node.distance_to_start, tags=node.state)
+        canvas.create_text(node.column * node_size + (node_size * 3 / 4), node.row * node_size + (node_size / 5),
+                           font=("", math.floor(node_size * 10 / 36)), text=node.distance_to_finish, tags=node.state)
+        canvas.create_text(node.column * node_size + (node_size / 2), node.row * node_size + (node_size * 2 / 3),
+                           font=("", math.floor(node_size / 2)), text=node.absolute_weight, tags=node.state)
+        neighbors = board.get_neighbors(node)
+        unvisited_neighbors = filter(lambda neigh: not neigh.state == "wall", neighbors)
+        for neighbor in unvisited_neighbors:
+            canvas.create_rectangle(neighbor.column * node_size, neighbor.row * node_size,
+                                    neighbor.column * node_size + node_size,
+                                    neighbor.row * node_size + node_size,
+                                    fill=color_dictionary[neighbor.state], outline="black",
+                                    tags=neighbor.state)
+            canvas.create_text(neighbor.column * node_size + (node_size / 4),
+                               neighbor.row * node_size + (node_size / 5),
+                               font=("", math.floor(node_size * 10 / 36)), text=neighbor.distance_to_start, tags=neighbor.state)
+            canvas.create_text(neighbor.column * node_size + (node_size * 3 / 4),
+                               neighbor.row * node_size + (node_size / 5),
+                               font=("", math.floor(node_size * 10 / 36)), text=neighbor.distance_to_finish, tags=neighbor.state)
+            canvas.create_text(neighbor.column * node_size + (node_size / 2),
+                               neighbor.row * node_size + (node_size * 2 / 3),
+                               font=("", math.floor(node_size / 2)), text=neighbor.absolute_weight, tags=neighbor.state)
+
 
 animation_mode = "complete"
 def set_animation_mode():
@@ -259,6 +342,10 @@ def reset_board(board):
     main_board = Board(board_height,board_width)
     draw_board(main_board)
     state = "editable"
+
+def delete_paths(board):
+    board.reset_after_algorithm()
+    draw_board(main_board)
 
 def create_random_maze():
     reset_board(main_board)
@@ -295,6 +382,14 @@ canvas.tag_bind("node", "<Button-1>", begin_wall_building)
 canvas.tag_bind("node", "<Motion>", build_walls)
 canvas.tag_bind("node", "<ButtonRelease-1>", complete_wall_building)
 
+canvas.tag_bind("visited", "<Button-1>", begin_wall_building)
+canvas.tag_bind("visited", "<Motion>", build_walls)
+canvas.tag_bind("visited", "<ButtonRelease-1>", complete_wall_building)
+
+canvas.tag_bind("path", "<Button-1>", begin_wall_building)
+canvas.tag_bind("path", "<Motion>", build_walls)
+canvas.tag_bind("path", "<ButtonRelease-1>", complete_wall_building)
+
 canvas.tag_bind("wall", "<Button-1>", begin_wall_deleting)
 canvas.tag_bind("wall", "<Motion>", delete_walls)
 canvas.tag_bind("wall", "<ButtonRelease-1>", complete_wall_deleting)
@@ -311,6 +406,8 @@ canvas.tag_bind("node", "<Enter>", display_node_information)
 canvas.tag_bind("wall", "<Enter>", display_node_information)
 canvas.tag_bind("start", "<Enter>", display_node_information)
 canvas.tag_bind("finish", "<Enter>", display_node_information)
+canvas.tag_bind("visited", "<Enter>", display_node_information)
+canvas.tag_bind("path", "<Enter>", display_node_information)
 canvas.pack()
 
 node_information = tkinter.StringVar()
@@ -318,21 +415,33 @@ node_information.set("Row: \nColumn:\n Distance to start:\n Distance to finish: 
 node_information_label = Label(root, textvariable=node_information, bg="#D0D0D0", font=("Helvatical bold",20), justify="left")
 node_information_label.pack(side="left")
 
+
+node_size_label = Label(root, text="Größe der Nodes")
+node_size_label.pack(anchor=NE)
+node_size_slider = Scale(root, from_=10, to=50, orient=HORIZONTAL, command=set_node_size)
+node_size_slider.set(node_size)
+node_size_slider.pack(side="right", anchor=NE)
+
+clear_board = tkinter.Button(root, text="Zurücksetzen", command=lambda: reset_board(main_board))
+clear_board.pack(side="right", anchor=NE)
+
+clear_paths = tkinter.Button(root, text="Wege entfernen", command=lambda: delete_paths(main_board))
+clear_paths.pack(side="right", anchor=NE)
+
+maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: animate_maze(main_board, "recursive division maze"))
+maze.pack(side="right", anchor=NE)
+
+random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", command=lambda: create_random_maze())
+random_maze.pack(side="right", anchor=NE)
+
+
 start_algorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: animate_algorithm(main_board))
 start_algorithm.pack()
 
-debug_button_text = tkinter.StringVar()
-debug_button_text.set("Visualisierung: komplett")
-set_animation_mode_button = tkinter.Button(root, textvariable=debug_button_text, command=lambda: set_animation_mode())
-set_animation_mode_button.pack()
-
 show_information_text = tkinter.StringVar()
 show_information_text.set("Nodeinformationen anzeigen")
-set_show_information_button = tkinter.Button(root, textvariable=show_information_text, command=lambda: set_show_animation())
+set_show_information_button = tkinter.Button(root, textvariable=show_information_text, command=lambda: set_show_information())
 set_show_information_button.pack()
-
-step_forward_button = tkinter.Button(root, text="Schritt weiter", command=lambda: step_forward(main_board))
-step_forward_button.pack()
 
 algorithms = StringVar(root)
 algorithms.set("Dijkstra") # default value
@@ -345,30 +454,9 @@ path_length.set("")
 path_length_label = Label(root, textvariable=path_length)
 path_length_label.pack()
 
-node_size_label = Label(root, text="Größe der Nodes")
-node_size_label.pack(side="right")
-node_size_slider = Scale(root, from_=10, to=50, orient=HORIZONTAL, command=set_node_size)
-node_size_slider.set(node_size)
-node_size_slider.pack(side="right")
-
-clear_board = tkinter.Button(root, text="Zurücksetzen", command=lambda: reset_board(main_board))
-clear_board.pack(side="right")
-
-clear_paths = tkinter.Button(root, text="Wege entfernen", command=lambda: draw_board(main_board))
-clear_paths.pack(side="right")
-
-maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: animate_maze(main_board, "recursive division maze"))
-maze.pack(side="right")
-
-random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", command=lambda: create_random_maze())
-random_maze.pack(side="right")
-
-draw_bord = tkinter.Button(root, text="Board zeichnen", command=lambda: draw_board(main_board))
-draw_bord.pack(side="right")
-
 animation_speed_label = Label(root, text="Geschwindigkeit der Animation")
 animation_speed_label.pack()
-animation_speed_slider = Scale(root, from_=1, to=50, orient=HORIZONTAL)
+animation_speed_slider = Scale(root, from_=1, to=1000, orient=HORIZONTAL)
 animation_speed_slider.set(10)
 animation_speed_slider.pack()
 

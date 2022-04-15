@@ -11,11 +11,13 @@ class Board:
 
         self.start_row = math.floor(self.rows / 2)
         self.start_column = math.floor(self.columns / 4)
-        self.nodes[self.start_row][self.start_column] = Node(self.start_row, self.start_column, "start")
+        self.start_node = Node(self.start_row, self.start_column, "start")
+        self.nodes[self.start_row][self.start_column] = self.start_node
 
         self.finish_row = math.floor(self.rows / 2)
         self.finish_column = math.floor(self.columns / 4 * 3)
-        self.nodes[self.finish_row][self.finish_column] = Node(self.finish_row, self.finish_column, "finish")
+        self.finish_node = Node(self.finish_row, self.finish_column, "finish")
+        self.nodes[self.finish_row][self.finish_column] = self.finish_node
 
     def get_neighbors(self, node):
         neighbors = []
@@ -49,7 +51,7 @@ class Board:
             for column in range(self.columns):
                 if self.nodes[row][column].state != "start" and self.nodes[row][column].state != "finish":
                     random_number = random.uniform(0, 1)
-                    if random_number > 0.6:
+                    if random_number > 0.7:
                         self.nodes[row][column].state = "wall"
                     else:
                         self.nodes[row][column].state = "node"
@@ -57,6 +59,9 @@ class Board:
     def reset_after_algorithm(self):
         for row in range(self.rows):
             for column in range(self.columns):
-                self.nodes[row][column].is_visited = False
-                self.nodes[row][column].previous_node = None
-                self.nodes[row][column].distance_to_finish = math.inf
+                node = self.nodes[row][column]
+                node.is_visited = False
+                node.previous_node = None
+                node.distance_to_finish = math.inf
+                if node.state == "visited" or node.state == "path":
+                    node.state = "node"
