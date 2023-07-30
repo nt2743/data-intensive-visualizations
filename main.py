@@ -6,9 +6,7 @@ from algorithms.Algorithm import shortest_path
 from algorithms.Dijkstra import update_unvisited_neighbors
 from algorithms.A_Star import update_neighbors
 from mazes import Recursive_division
-from enum import Enum
 from queue import PriorityQueue
-import time
 
 root = tkinter.Tk()
 root.title("Pathfinding Visualization")
