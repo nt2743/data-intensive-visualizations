@@ -1,6 +1,7 @@
 import math
 from Board import Board
 import tkinter
+import random
 from tkinter import *
 from algorithms.Algorithm import shortest_path
 from algorithms.Dijkstra import update_unvisited_neighbors
@@ -29,19 +30,41 @@ color_dictionary = {
     "visited": "cyan",
     "path": "yellow"
 }
-
 show_information = False
+
+element_size = 10
+
+
+def select_algorithm():
+    canvas.delete("all")
+    if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
+        draw_board(main_board)
+        node_size_slider.set(node_size)
+    else:
+        data = list(range(1, 101))
+        random.shuffle(data)
+        draw_sorting_data(data)
 
 def draw_board(board):
     for row in range(len(board.nodes)):
         for column in range(len(board.nodes[0])):
             node_state = board.nodes[row][column].state
-            canvas.create_rectangle(column * node_size, row * node_size, column * node_size + node_size, row * node_size + node_size,
-                                            fill=color_dictionary[node_state], outline="black", tags=node_state)
+            canvas.create_rectangle(column * node_size,
+                                    row * node_size,
+                                    column * node_size + node_size,
+                                    row * node_size + node_size,
+                                    fill=color_dictionary[node_state], outline="black", tags=node_state)
             if show_information:
                 show_information_of_node(board, board.nodes[row][column])
 
-draw_board(main_board)
+def draw_sorting_data(data):
+    for element in range(len(data)):
+        canvas.create_rectangle(element * canvas_width / len(data),
+                                canvas_height,
+                                (element+1) * canvas_width / len(data),
+                                canvas_height - (canvas_height / len(data) * (data[element])),
+                                fill="black", outline="white")
+        print(canvas_height / len(data) * (data[element] + 1))
 
 def change_node_state(node, new_node_state):
     node.state = new_node_state
@@ -375,7 +398,6 @@ def set_node_size(event):
     reset_board(main_board)
     draw_board(main_board)
 
-
 canvas.tag_bind("node", "<Button-1>", begin_wall_building)
 canvas.tag_bind("node", "<Motion>", build_walls)
 canvas.tag_bind("node", "<ButtonRelease-1>", complete_wall_building)
@@ -417,7 +439,6 @@ node_information_label.pack(side="left")
 node_size_label = Label(root, text="Größe der Nodes")
 node_size_label.pack(anchor=NE)
 node_size_slider = Scale(root, from_=10, to=50, orient=HORIZONTAL, command=set_node_size)
-node_size_slider.set(node_size)
 node_size_slider.pack(side="right", anchor=NE)
 
 clear_board = tkinter.Button(root, text="Zurücksetzen", command=lambda: reset_board(main_board))
@@ -442,10 +463,11 @@ set_show_information_button = tkinter.Button(root, textvariable=show_information
 set_show_information_button.pack()
 
 algorithms = StringVar(root)
-algorithms.set("Dijkstra") # default value
+algorithms.set("Quicksort") # default value
 
-choose_algorithm = OptionMenu(root, algorithms, "Dijkstra", "A*")
+choose_algorithm = OptionMenu(root, algorithms, "Dijkstra", "A*", "Quicksort", command=select_algorithm)
 choose_algorithm.pack()
+select_algorithm()
 
 path_length = tkinter.StringVar()
 path_length.set("")
