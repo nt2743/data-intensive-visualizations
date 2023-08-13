@@ -1,6 +1,3 @@
-import math
-from queue import PriorityQueue
-
 def update_neighbors(node, board, queue, open_set_hash):
 	neighbors = board.get_neighbors(node)
 	for neighbor in neighbors:

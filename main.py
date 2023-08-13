@@ -6,6 +6,7 @@ from tkinter import *
 from algorithms.Algorithm import shortest_path
 from algorithms.Dijkstra import update_unvisited_neighbors
 from algorithms.A_Star import update_neighbors
+from algorithms.Quicksort import quicksort_recursive
 from mazes import Recursive_division
 from queue import PriorityQueue
 
@@ -18,10 +19,11 @@ canvas_height = 500
 canvas_width = 1530
 canvas = Canvas(root, height=canvas_height, width=canvas_width)
 
+# pathfinding variables
 node_size = 30
-board_height = math.floor(canvas_height/node_size)
-board_width = math.floor(canvas_width/node_size)
-main_board = Board(board_height, board_width)
+board_rows = math.floor(canvas_height / node_size)
+board_columns = math.floor(canvas_width / node_size)
+main_board = Board(board_rows, board_columns)
 color_dictionary = {
     "node": "white",
     "wall": "grey",
@@ -32,18 +34,18 @@ color_dictionary = {
 }
 show_information = False
 
-element_size = 10
+# sorting variables
+sorting_data = list(range(1, 101))
+random.shuffle(sorting_data)
+element_ids = {}
 
-
-def select_algorithm():
+def select_algorithm(event):
     canvas.delete("all")
     if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
-        draw_board(main_board)
         node_size_slider.set(node_size)
+        draw_board(main_board)
     else:
-        data = list(range(1, 101))
-        random.shuffle(data)
-        draw_sorting_data(data)
+        draw_sorting_data(sorting_data)
 
 def draw_board(board):
     for row in range(len(board.nodes)):
@@ -58,13 +60,18 @@ def draw_board(board):
                 show_information_of_node(board, board.nodes[row][column])
 
 def draw_sorting_data(data):
+    global element_ids
     for element in range(len(data)):
-        canvas.create_rectangle(element * canvas_width / len(data),
+        element_id = canvas.create_rectangle(element * canvas_width / len(data),
                                 canvas_height,
                                 (element+1) * canvas_width / len(data),
                                 canvas_height - (canvas_height / len(data) * (data[element])),
-                                fill="black", outline="white")
-        print(canvas_height / len(data) * (data[element] + 1))
+                                fill="black", outline="white", tags=data[element])
+        element_ids[element] = element_id
+        #canvas.create_text(element * canvas_width / len(data),
+                                #5,
+                                #font=("",7),
+                                #text=canvas.gettags(element_id))
 
 def change_node_state(node, new_node_state):
     node.state = new_node_state
@@ -236,22 +243,30 @@ def shortest_path(board, current_node, length):
         show_information_of_node(board, previous_node)
     root.after(20, shortest_path, board, previous_node, length)
 
-def animate_algorithm (board):
+def quicksort(data):
+    quicksort_recursive(sorting_data, 0, len(sorting_data)-1, canvas, element_ids)
+
+def animate_algorithm ():
     global state
     state = "visualizing"
-    path_length.set("Weglänge: ...")
-    main_board.reset_after_algorithm()
-    draw_board(board)
-    start_node = board.nodes[board.start_row][board.start_column]
     match algorithms.get():
         case "Dijkstra":
-            unvisited_nodes = [j for sub in board.nodes for j in sub]
+            path_length.set("Weglänge: ...")
+            main_board.reset_after_algorithm()
+            draw_board(main_board)
+            unvisited_nodes = [j for sub in main_board.nodes for j in sub]
             dijkstra(main_board, unvisited_nodes)
         case "A*":
+            path_length.set("Weglänge: ...")
+            main_board.reset_after_algorithm()
+            draw_board(main_board)
+            start_node = main_board.nodes[main_board.start_row][main_board.start_column]
             priority_queue = PriorityQueue()
             priority_queue.put((start_node.absolute_weight, start_node.distance_to_finish, start_node))
             open_set_hash = {start_node}
             a_star(main_board, priority_queue, open_set_hash)
+        case "Quicksort":
+            quicksort(sorting_data)
 
 def animate_maze(board, animation_type):
     global state
@@ -356,11 +371,11 @@ def skip_animation():
         animation_mode = "skip"
 
 def reset_board(board):
-    global main_board, board_height, board_width, state
+    global main_board, board_rows, board_columns, state
     canvas.delete("all")
-    board_height = math.floor(canvas_height / node_size)
-    board_width = math.floor(canvas_width / node_size)
-    main_board = Board(board_height,board_width)
+    board_rows = math.floor(canvas_height / node_size)
+    board_columns = math.floor(canvas_width / node_size)
+    main_board = Board(board_rows, board_columns)
     draw_board(main_board)
     state = "editable"
 
@@ -454,7 +469,7 @@ random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", comman
 random_maze.pack(side="right", anchor=NE)
 
 
-start_algorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: animate_algorithm(main_board))
+start_algorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: animate_algorithm())
 start_algorithm.pack()
 
 show_information_text = tkinter.StringVar()
@@ -467,7 +482,7 @@ algorithms.set("Quicksort") # default value
 
 choose_algorithm = OptionMenu(root, algorithms, "Dijkstra", "A*", "Quicksort", command=select_algorithm)
 choose_algorithm.pack()
-select_algorithm()
+select_algorithm("")
 
 path_length = tkinter.StringVar()
 path_length.set("")
