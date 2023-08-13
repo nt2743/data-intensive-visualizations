@@ -7,6 +7,8 @@ from algorithms.Algorithm import shortest_path
 from algorithms.Dijkstra import update_unvisited_neighbors
 from algorithms.A_Star import update_neighbors
 from algorithms.Quicksort import quicksort_recursive
+from algorithms.Settings import set_global_delay
+from algorithms.Settings import get_global_delay
 from mazes import Recursive_division
 from queue import PriorityQueue
 
@@ -245,6 +247,7 @@ def shortest_path(board, current_node, length):
 
 def quicksort(data):
     quicksort_recursive(sorting_data, 0, len(sorting_data)-1, canvas, element_ids)
+    canvas.update()
 
 def animate_algorithm ():
     global state
@@ -365,10 +368,15 @@ def set_animation_mode():
         debug_button_text.set("Visualisierung: Schritt für Schritt")
         animation_mode = "step by step"
 
+def update_delay(new_delay):
+    set_global_delay(float(new_delay) / 1000)
+
 def skip_animation():
     global animation_mode
     if animation_mode == "complete":
         animation_mode = "skip"
+
+    set_global_delay(0)
 
 def reset_board(board):
     global main_board, board_rows, board_columns, state
@@ -491,8 +499,9 @@ path_length_label.pack()
 
 animation_speed_label = Label(root, text="Geschwindigkeit der Animation")
 animation_speed_label.pack()
-animation_speed_slider = Scale(root, from_=1, to=1000, orient=HORIZONTAL)
-animation_speed_slider.set(10)
+animation_speed_slider = Scale(root, from_=50, to=1, orient=HORIZONTAL, command=update_delay, showvalue=False)
+animation_speed_slider.pack(fill="x")
+animation_speed_slider.set(25)
 animation_speed_slider.pack()
 
 skip_animation_button = tkinter.Button(root, text="Animation überspringen", command=lambda: skip_animation())

@@ -1,4 +1,5 @@
 import time
+from algorithms.Settings import get_global_delay
 def quicksort_recursive (arr, low, high, canvas, element_ids):
     if low < high:
         pivotIndex = partition(arr, low, high, canvas, element_ids)
@@ -10,15 +11,17 @@ def quicksort_recursive (arr, low, high, canvas, element_ids):
 
 def partition (arr, low, high, canvas, element_ids):
     pivot = arr[high]
-    canvas.itemconfig(element_ids[high], fill="green")
-    canvas.update()
-    time.sleep(0.01)
+    if (get_global_delay() != 0):
+        canvas.itemconfig(element_ids[high], fill="green")
+        canvas.update()
+        time.sleep(get_global_delay())
     i = low - 1
 
     for j in range(low, high):
-        canvas.itemconfig(element_ids[j], fill="red")
-        canvas.update()  # Update the canvas to immediately show the change
-        time.sleep(0.01)
+        if (get_global_delay() != 0):
+            canvas.itemconfig(element_ids[j], fill="red")
+            canvas.update()
+            time.sleep(get_global_delay())
         if arr[j] < pivot:
             i += 1
             if i != j:
@@ -33,10 +36,11 @@ def swap(data, index_a, index_b, canvas, element_ids):
     data[index_a] = data[index_b]
     data[index_b] = tempValue
 
-    canvas.itemconfig(element_ids[index_a], fill="cyan")
-    canvas.itemconfig(element_ids[index_b], fill="cyan")
-    canvas.update()
-    time.sleep(0.01)
+    if(get_global_delay() != 0):
+        canvas.itemconfig(element_ids[index_a], fill="cyan")
+        canvas.itemconfig(element_ids[index_b], fill="cyan")
+        canvas.update()
+        time.sleep(get_global_delay())
 
     coords_a = canvas.coords(element_ids[index_a])
     coords_b = canvas.coords(element_ids[index_b])
@@ -51,6 +55,7 @@ def swap(data, index_a, index_b, canvas, element_ids):
     # switch the elements ids
     element_ids[index_a], element_ids[index_b] = element_ids[index_b], element_ids[index_a]
 
-    canvas.itemconfig(element_ids[index_a], fill="black")
-    canvas.itemconfig(element_ids[index_b], fill="black")
-    canvas.update()
+    if (get_global_delay() != 0):
+        canvas.itemconfig(element_ids[index_a], fill="black")
+        canvas.itemconfig(element_ids[index_b], fill="black")
+        canvas.update()
