@@ -4,8 +4,8 @@ import tkinter
 import random
 from tkinter import *
 from algorithms.Algorithm import shortest_path
-from algorithms.Dijkstra import update_unvisited_neighbors
-from algorithms.A_Star import update_neighbors
+from algorithms.Dijkstra import dijkstra
+from algorithms.A_Star import a_star
 from algorithms.Quicksort import quicksort_recursive
 from algorithms.Settings import set_global_delay
 from algorithms.Settings import get_global_delay
@@ -58,8 +58,8 @@ def draw_board(board):
                                     column * node_size + node_size,
                                     row * node_size + node_size,
                                     fill=color_dictionary[node_state], outline="black", tags=node_state)
-            if show_information:
-                show_information_of_node(board, board.nodes[row][column])
+            #if show_information:
+                #show_information_of_node(board, board.nodes[row][column])
 
 def draw_sorting_data(data):
     global element_ids
@@ -162,92 +162,6 @@ def drop(event):
 
 # algorithms
 next_step = False
-def dijkstra (board, unvisited_nodes):
-    unvisited_nodes.sort(key=lambda node: node.distance_to_start)
-    current_node = unvisited_nodes.pop(0)
-    # no possible way to finish
-    if current_node.distance_to_start == math.inf:
-        return
-
-    # check if done
-    if current_node == board.finish_node:
-        root.after(animation_speed_slider.get(), shortest_path, board, board.finish_node, 0)
-        return
-
-    # draw visited node
-    if current_node.state == "node":
-        current_node.state = "visited"
-        canvas.create_rectangle(current_node.column * node_size, current_node.row * node_size,
-                            current_node.column * node_size + node_size,
-                            current_node.row * node_size + node_size, fill=color_dictionary[current_node.state], outline="black", tags=current_node.state)
-    if show_information:
-        show_information_of_node(board, current_node)
-
-    # update nodes
-    current_node.is_visited = True
-    update_unvisited_neighbors(current_node, board)
-
-    # recursive step
-    if animation_mode == "complete":
-        root.after(animation_speed_slider.get(), dijkstra, board, unvisited_nodes)
-    else:
-        root.after(0, dijkstra, board, unvisited_nodes)
-
-def a_star(board, priority_queue, open_set_hash):
-    # no possible way to finish
-    if priority_queue.empty():
-        return
-
-    current_node = priority_queue.get()[2]
-    open_set_hash.remove(current_node)
-
-    # check if done
-    if current_node == board.finish_node:
-        root.after(animation_speed_slider.get(), shortest_path, board, board.finish_node, 0)
-        return
-
-
-    # update nodes
-    current_node.is_visited = True
-    priority_queue = update_neighbors(current_node, board, priority_queue, open_set_hash)
-
-    # draw visited node
-    if current_node.state == "node":
-        current_node.state = "visited"
-        canvas.create_rectangle(current_node.column * node_size, current_node.row * node_size, current_node.column * node_size + node_size,
-                            current_node.row * node_size + node_size, fill=color_dictionary[current_node.state], outline="black", tags=current_node.state)
-        if show_information:
-            show_information_of_node(board, current_node)
-
-
-    # recursive step
-    if animation_mode == "complete":
-        root.after(animation_speed_slider.get(), a_star, board, priority_queue, open_set_hash)
-    elif animation_mode == "step by step":
-        root.after(1000, a_star, board, priority_queue, open_set_hash)
-    else:
-        root.after(0, a_star, board, priority_queue, open_set_hash)
-
-def shortest_path(board, current_node, length):
-    global state, animation_mode
-    length += 1
-    path_length.set("Weglänge: " + str(length))
-    previous_node = current_node.previous_node
-    if previous_node == board.start_node:
-        state = "visualized"
-        animation_mode = "complete"
-        return
-    previous_node.state = "path"
-    canvas.create_rectangle(previous_node.column * node_size, previous_node.row * node_size,
-                            previous_node.column * node_size + node_size,
-                            previous_node.row * node_size + node_size,  fill=color_dictionary[previous_node.state], outline="black", tags=previous_node.state)
-    if show_information:
-        show_information_of_node(board, previous_node)
-    root.after(20, shortest_path, board, previous_node, length)
-
-def quicksort(data):
-    quicksort_recursive(sorting_data, 0, len(sorting_data)-1, canvas, element_ids)
-    canvas.update()
 
 def animate_algorithm ():
     global state
@@ -258,18 +172,19 @@ def animate_algorithm ():
             main_board.reset_after_algorithm()
             draw_board(main_board)
             unvisited_nodes = [j for sub in main_board.nodes for j in sub]
-            dijkstra(main_board, unvisited_nodes)
+            dijkstra(main_board, unvisited_nodes, canvas, node_size, show_information, color_dictionary)
         case "A*":
             path_length.set("Weglänge: ...")
             main_board.reset_after_algorithm()
             draw_board(main_board)
             start_node = main_board.nodes[main_board.start_row][main_board.start_column]
             priority_queue = PriorityQueue()
-            priority_queue.put((start_node.absolute_weight, start_node.distance_to_finish, start_node))
+            priority_queue.put(start_node.absolute_weight, start_node.distance_to_finish, start_node)
             open_set_hash = {start_node}
-            a_star(main_board, priority_queue, open_set_hash)
+            a_star(main_board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary)
         case "Quicksort":
-            quicksort(sorting_data)
+            quicksort_recursive(sorting_data, 0, len(sorting_data) - 1, canvas, element_ids)
+            canvas.update()
 
 def animate_maze(board, animation_type):
     global state
@@ -330,33 +245,6 @@ def set_show_information():
         show_information_text.set("Nodeinformationen verbergen")
         show_information = True
         draw_board(main_board)
-
-def show_information_of_node(board, node):
-    if node.state == "visited" or node.state == "path":
-        canvas.create_text(node.column * node_size + (node_size / 4), node.row * node_size + (node_size / 5),
-                           font=("", math.floor(node_size * 10 / 36)), text=node.distance_to_start, tags=node.state)
-        canvas.create_text(node.column * node_size + (node_size * 3 / 4), node.row * node_size + (node_size / 5),
-                           font=("", math.floor(node_size * 10 / 36)), text=node.distance_to_finish, tags=node.state)
-        canvas.create_text(node.column * node_size + (node_size / 2), node.row * node_size + (node_size * 2 / 3),
-                           font=("", math.floor(node_size / 2)), text=node.absolute_weight, tags=node.state)
-        neighbors = board.get_neighbors(node)
-        unvisited_neighbors = filter(lambda neigh: not neigh.state == "wall", neighbors)
-        for neighbor in unvisited_neighbors:
-            canvas.create_rectangle(neighbor.column * node_size, neighbor.row * node_size,
-                                    neighbor.column * node_size + node_size,
-                                    neighbor.row * node_size + node_size,
-                                    fill=color_dictionary[neighbor.state], outline="black",
-                                    tags=neighbor.state)
-            canvas.create_text(neighbor.column * node_size + (node_size / 4),
-                               neighbor.row * node_size + (node_size / 5),
-                               font=("", math.floor(node_size * 10 / 36)), text=neighbor.distance_to_start, tags=neighbor.state)
-            canvas.create_text(neighbor.column * node_size + (node_size * 3 / 4),
-                               neighbor.row * node_size + (node_size / 5),
-                               font=("", math.floor(node_size * 10 / 36)), text=neighbor.distance_to_finish, tags=neighbor.state)
-            canvas.create_text(neighbor.column * node_size + (node_size / 2),
-                               neighbor.row * node_size + (node_size * 2 / 3),
-                               font=("", math.floor(node_size / 2)), text=neighbor.absolute_weight, tags=neighbor.state)
-
 
 animation_mode = "complete"
 def set_animation_mode():

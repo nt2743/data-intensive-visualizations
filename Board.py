@@ -1,6 +1,9 @@
 from Node import Node
 import math
 import random
+import time
+
+from algorithms.Settings import get_global_delay
 
 class Board:
     def __init__(self, rows, columns):
@@ -65,3 +68,23 @@ class Board:
                 node.distance_to_finish = math.inf
                 if node.state == "visited" or node.state == "path":
                     node.state = "node"
+
+def shortest_path(board, current_node, length, canvas, node_size, show_information, color_dictionary):
+    global state, animation_mode
+    length += 1
+    # path_length.set("Weglänge: " + str(length))
+    previous_node = current_node.previous_node
+    if previous_node == board.start_node:
+        state = "visualized"
+        animation_mode = "complete"
+        return
+    previous_node.state = "path"
+    canvas.create_rectangle(previous_node.column * node_size, previous_node.row * node_size,
+                            previous_node.column * node_size + node_size,
+                            previous_node.row * node_size + node_size, fill=color_dictionary[previous_node.state],
+                            outline="black", tags=previous_node.state)
+    canvas.update()
+    time.sleep(get_global_delay())
+    if show_information:
+        current_node.show_information_of_node(board, current_node, canvas, node_size, color_dictionary)
+    shortest_path(board, previous_node, length, canvas, node_size, show_information, color_dictionary)

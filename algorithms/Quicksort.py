@@ -1,5 +1,6 @@
 import time
 from algorithms.Settings import get_global_delay
+
 def quicksort_recursive (arr, low, high, canvas, element_ids):
     if low < high:
         pivotIndex = partition(arr, low, high, canvas, element_ids)
