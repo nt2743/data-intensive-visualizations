@@ -17,12 +17,12 @@ root.title("Pathfinding Visualization")
 root.state("zoomed") # window full-screen
 state = "editable" # represents the current program state
 
-canvas_height = 500
+canvas_height = 550
 canvas_width = 1530
 canvas = Canvas(root, height=canvas_height, width=canvas_width)
 
 # pathfinding variables
-node_size = 30
+node_size = 35
 board_rows = math.floor(canvas_height / node_size)
 board_columns = math.floor(canvas_width / node_size)
 main_board = Board(board_rows, board_columns)
@@ -38,16 +38,20 @@ show_information = False
 
 # sorting variables
 sorting_data = list(range(1, 101))
-random.shuffle(sorting_data)
 element_ids = {}
 
 def select_algorithm(event):
+    global node_size, sorting_data
     canvas.delete("all")
     if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
-        node_size_slider.set(node_size)
+        node_size = data_amount_slider.get()
         draw_board(main_board)
+        algorithm_information.set("visited nodes: -      path length: -       ")
     else:
+        sorting_data = list(range(1, data_amount_slider.get()*3))
+        random.shuffle(sorting_data)
         draw_sorting_data(sorting_data)
+        algorithm_information.set("array accesses: -     comparisons: -       swaps: -     ")
 
 def draw_board(board):
     for row in range(len(board.nodes)):
@@ -168,13 +172,12 @@ def animate_algorithm ():
     state = "visualizing"
     match algorithms.get():
         case "Dijkstra":
-            path_length.set("Weglänge: ...")
             main_board.reset_after_algorithm()
             draw_board(main_board)
             unvisited_nodes = [j for sub in main_board.nodes for j in sub]
             dijkstra(main_board, unvisited_nodes, canvas, node_size, show_information, color_dictionary)
+            draw_board(main_board)
         case "A*":
-            path_length.set("Weglänge: ...")
             main_board.reset_after_algorithm()
             draw_board(main_board)
             start_node = main_board.nodes[main_board.start_row][main_board.start_column]
@@ -182,6 +185,7 @@ def animate_algorithm ():
             priority_queue.put((start_node.absolute_weight, start_node.distance_to_finish, start_node))
             open_set_hash = {start_node}
             a_star(main_board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary)
+            draw_board(main_board)
         case "Quicksort":
             quicksort_recursive(sorting_data, 0, len(sorting_data) - 1, canvas, element_ids)
             canvas.update()
@@ -243,7 +247,6 @@ def visualize (board, nodes_in_order, color, node_state):
         if color == "cyan":
             print("bla")
             nodes_shortest_path = shortest_path(board, board.finish_node)
-            path_length.set("Weglänge: " + str(len(nodes_shortest_path)))
             visualize(board, nodes_shortest_path, "yellow", "node")
         state = "visualized"
         if animation_mode == "skip":
@@ -272,6 +275,7 @@ def set_animation_mode():
 
 def update_delay(new_delay):
     set_global_delay(float(new_delay) / 1000)
+    delay_information.set("delay: " + new_delay + "ms")
 
 def skip_animation():
     global animation_mode
@@ -317,12 +321,6 @@ def display_node_information(event):
     except:
         return
 
-def set_node_size(event):
-    global node_size
-    node_size = node_size_slider.get()
-    reset_board(main_board)
-    draw_board(main_board)
-
 canvas.tag_bind("node", "<Button-1>", begin_wall_building)
 canvas.tag_bind("node", "<Motion>", build_walls)
 canvas.tag_bind("node", "<ButtonRelease-1>", complete_wall_building)
@@ -353,60 +351,72 @@ canvas.tag_bind("start", "<Enter>", display_node_information)
 canvas.tag_bind("finish", "<Enter>", display_node_information)
 canvas.tag_bind("visited", "<Enter>", display_node_information)
 canvas.tag_bind("path", "<Enter>", display_node_information)
-canvas.pack()
+canvas.grid(row=1, column=0, columnspan=12)
 
+
+# top
+top_row = tkinter.Frame(root)
+top_row.grid(row=0, column=0, columnspan=12, sticky="N")
+
+data_amount_label = tkinter.Label(top_row, text="Amount of data", font=("", 16))
+data_amount_label.grid(row=0, column=0, sticky="S")
+data_amount_slider = tkinter.Scale(top_row, from_=20, to=50, orient=tkinter.HORIZONTAL, command=select_algorithm)
+data_amount_slider.set(35)
+data_amount_slider.grid(row=0, column=1, sticky="w")
+
+clear_board = tkinter.Button(top_row, text="Zurücksetzen", font=("", 14), bg="white", command=lambda: reset_board(main_board))
+clear_board.grid(row=0, column=2, sticky="w", padx=10)
+
+clear_paths = tkinter.Button(top_row, text="Wege entfernen", font=("", 14), bg="white", command=lambda: delete_paths(main_board))
+clear_paths.grid(row=0, column=3, sticky="w", padx=10)
+
+recursive_maze = tkinter.Button(top_row, text="Labyrinth erzeugen", font=("", 14), bg="white", command=lambda: animate_maze(main_board, "recursive division maze"))
+recursive_maze.grid(row=0, column=4, sticky="w", padx=10)
+
+random_maze = tkinter.Button(top_row, text="Zufälliges Labyrinth erzeugen", font=("", 14), bg="white", command=lambda: create_random_maze())
+random_maze.grid(row=0, column=5, sticky="w", padx=10)
+
+
+# left side
 node_information = tkinter.StringVar()
-node_information.set("Row: \nColumn:\n Distance to start:\n Distance to finish: ")
+node_information.set("Row: \nColumn: \nDistance to start: \nDistance to finish: ")
 node_information_label = Label(root, textvariable=node_information, bg="#D0D0D0", font=("Helvatical bold",20), justify="left")
-node_information_label.pack(side="left")
+node_information_label.grid(row=2, column=0, rowspan=10, sticky=NW)
 
 
-node_size_label = Label(root, text="Größe der Nodes")
-node_size_label.pack(anchor=NE)
-node_size_slider = Scale(root, from_=10, to=50, orient=HORIZONTAL, command=set_node_size)
-node_size_slider.pack(side="right", anchor=NE)
+# middle
+algorithm_information = tkinter.StringVar()
+algorithm_information_label = Label(root, textvariable=algorithm_information, bg="#D0D0D0", font=("",14))
+algorithm_information_label.grid(row=2, column=2, columnspan=5, pady=(0, 20))
 
-clear_board = tkinter.Button(root, text="Zurücksetzen", command=lambda: reset_board(main_board))
-clear_board.pack(side="right", anchor=NE)
-
-clear_paths = tkinter.Button(root, text="Wege entfernen", command=lambda: delete_paths(main_board))
-clear_paths.pack(side="right", anchor=NE)
-
-recursive_maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: animate_maze(main_board, "recursive division maze"))
-recursive_maze.pack(side="right", anchor=NE)
-
-random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", command=lambda: create_random_maze())
-random_maze.pack(side="right", anchor=NE)
-
-
-start_algorithm = tkinter.Button(root, text="Algorithmus starten", command=lambda: animate_algorithm())
-start_algorithm.pack()
+start_algorithm = tkinter.Button(root, text="Algorithmus starten", font=("", 20), bg="#88ff88", command=lambda: animate_algorithm())
+start_algorithm.grid(row=3, column=4)
 
 show_information_text = tkinter.StringVar()
 show_information_text.set("Nodeinformationen anzeigen")
 set_show_information_button = tkinter.Button(root, textvariable=show_information_text, command=lambda: set_show_information())
-set_show_information_button.pack()
+#set_show_information_button.grid(row=3, column=14, padx=10, pady=10)
 
 algorithms = StringVar(root)
 algorithms.set("Quicksort") # default value
-
 choose_algorithm = OptionMenu(root, algorithms, "Dijkstra", "A*", "Quicksort", command=select_algorithm)
-choose_algorithm.pack()
-select_algorithm("")
+choose_algorithm.config(font=("", 20), bg="white")
+choose_algorithm.grid(row=4, column=4)
 
-path_length = tkinter.StringVar()
-path_length.set("")
-path_length_label = Label(root, textvariable=path_length)
-path_length_label.pack()
 
-animation_speed_label = Label(root, text="Geschwindigkeit der Animation")
-animation_speed_label.pack()
-animation_speed_slider = Scale(root, from_=50, to=1, orient=HORIZONTAL, command=update_delay, showvalue=False)
-animation_speed_slider.pack(fill="x")
+# right side
+delay_information = tkinter.StringVar()
+delay_label = Label(root, textvariable=delay_information, font=("", 14), bg="#D0D0D0")
+delay_label.grid(row=2, column=10, sticky=N)
+
+animation_speed_label = Label(root, text="Animation speed", font=("", 16 ))
+animation_speed_label.grid(row=3, column=9, sticky=N)
+animation_speed_slider = Scale(root, from_=50, to=1, orient=HORIZONTAL, command=update_delay, showvalue=False, length=200)
 animation_speed_slider.set(25)
-animation_speed_slider.pack()
+animation_speed_slider.grid(row=3, column=10, sticky=N)
 
-skip_animation_button = tkinter.Button(root, text="Animation überspringen", command=lambda: skip_animation())
-skip_animation_button.pack()
+skip_animation_button = tkinter.Button(root, text="Skip animation", font=("", 14), bg="white", command=lambda: skip_animation())
+skip_animation_button.grid(row=4, column=10, sticky=N)
+
 
 root.mainloop()

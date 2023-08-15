@@ -24,13 +24,14 @@ def a_star(board, priority_queue, open_set_hash, canvas, node_size, show_informa
     # draw visited node
     if current_node.state == "node":
         current_node.state = "visited"
-        canvas.create_rectangle(current_node.column * node_size,
+        if get_global_delay() != 0:
+            canvas.create_rectangle(current_node.column * node_size,
                                 current_node.row * node_size,
                                 current_node.column * node_size + node_size,
                                 current_node.row * node_size + node_size,
                                 fill=color_dictionary[current_node.state], outline="black", tags=current_node.state)
-        canvas.update()
-        time.sleep(get_global_delay())
+            canvas.update()
+            time.sleep(get_global_delay())
         if show_information:
             current_node.show_information_of_node(board, current_node, canvas, node_size, color_dictionary)
 
