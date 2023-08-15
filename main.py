@@ -1,4 +1,6 @@
 import math
+import time
+
 from Board import Board
 import tkinter
 import random
@@ -7,9 +9,7 @@ from algorithms.Algorithm import shortest_path
 from algorithms.Dijkstra import dijkstra
 from algorithms.A_Star import a_star
 from algorithms.Quicksort import quicksort_recursive
-from algorithms.Settings import set_global_delay
-from algorithms.Settings import get_global_delay
-from mazes import Recursive_division
+from algorithms.Settings import set_global_delay, get_global_delay
 from queue import PriorityQueue
 
 root = tkinter.Tk()
@@ -59,7 +59,7 @@ def draw_board(board):
                                     row * node_size + node_size,
                                     fill=color_dictionary[node_state], outline="black", tags=node_state)
             #if show_information:
-                #show_information_of_node(board, board.nodes[row][column])
+               #board.nodes[row][column].show_information_of_node(main_board, canvas, node_size, color_dictionary)
 
 def draw_sorting_data(data):
     global element_ids
@@ -180,6 +180,7 @@ def animate_algorithm ():
             start_node = main_board.nodes[main_board.start_row][main_board.start_column]
             priority_queue = PriorityQueue()
             priority_queue.put(start_node.absolute_weight, start_node.distance_to_finish, start_node)
+            print(priority_queue.get()[2])
             open_set_hash = {start_node}
             a_star(main_board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary)
         case "Quicksort":
@@ -191,7 +192,20 @@ def animate_maze(board, animation_type):
     if animation_type == "recursive division maze":
         reset_board(board)
         border = main_board.create_border()
-        visualize(board, Recursive_division.create_maze_board(main_board, 2, main_board.rows - 3, 2, main_board.columns - 3, border), "grey", "wall")
+        #visualize(main_board, main_board.create_maze_board(2, main_board.rows - 3, 2, main_board.columns - 3, border), "grey", "wall")
+
+        maze = main_board.create_maze_board(2, main_board.rows - 3, 2, main_board.columns - 3, border)
+
+        for node in maze:
+            if node.state == "wall":
+                canvas.create_rectangle(node.column * node_size,
+                                        node.row * node_size,
+                                        node.column * node_size + node_size,
+                                        node.row * node_size + node_size,
+                                        fill="grey", outline="black", tags="wall")
+                canvas.update()
+                time.sleep(get_global_delay())
+
         state = "editable"
 
 def visualize (board, nodes_in_order, color, node_state):
@@ -228,6 +242,7 @@ def visualize (board, nodes_in_order, color, node_state):
                 root.after(0, visualize, board, nodes_in_order, color, node_state)
     else:
         if color == "cyan":
+            print("bla")
             nodes_shortest_path = shortest_path(board, board.finish_node)
             path_length.set("Weglänge: " + str(len(nodes_shortest_path)))
             visualize(board, nodes_shortest_path, "yellow", "node")
@@ -358,8 +373,8 @@ clear_board.pack(side="right", anchor=NE)
 clear_paths = tkinter.Button(root, text="Wege entfernen", command=lambda: delete_paths(main_board))
 clear_paths.pack(side="right", anchor=NE)
 
-maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: animate_maze(main_board, "recursive division maze"))
-maze.pack(side="right", anchor=NE)
+recursive_maze = tkinter.Button(root, text="Labyrinth erzeugen", command=lambda: animate_maze(main_board, "recursive division maze"))
+recursive_maze.pack(side="right", anchor=NE)
 
 random_maze = tkinter.Button(root, text="Zufälliges Labyrinth erzeugen", command=lambda: create_random_maze())
 random_maze.pack(side="right", anchor=NE)

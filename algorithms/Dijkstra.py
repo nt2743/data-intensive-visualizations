@@ -25,8 +25,8 @@ def dijkstra (board, unvisited_nodes, canvas, node_size, show_information, color
                                 fill=color_dictionary[current_node.state], outline="black", tags=current_node.state)
         canvas.update()
         time.sleep(get_global_delay())
-        if show_information:
-            current_node.show_information_of_node(board, current_node, canvas, node_size, color_dictionary)
+        #if show_information:
+            #current_node.show_information_of_node(board, canvas, node_size, color_dictionary)
 
     # update nodes
     current_node.is_visited = True
