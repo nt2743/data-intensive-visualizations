@@ -13,7 +13,7 @@ def a_star(board, priority_queue, open_set_hash, canvas, node_size, show_informa
 
     # check if done
     if current_node == board.finish_node:
-        shortest_path(board, board.finish_node, 0, canvas, node_size, color_dictionary)
+        shortest_path(board, board.finish_node, 0, canvas, node_size, show_information, color_dictionary)
         return
 
 

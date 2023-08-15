@@ -179,8 +179,7 @@ def animate_algorithm ():
             draw_board(main_board)
             start_node = main_board.nodes[main_board.start_row][main_board.start_column]
             priority_queue = PriorityQueue()
-            priority_queue.put(start_node.absolute_weight, start_node.distance_to_finish, start_node)
-            print(priority_queue.get()[2])
+            priority_queue.put((start_node.absolute_weight, start_node.distance_to_finish, start_node))
             open_set_hash = {start_node}
             a_star(main_board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary)
         case "Quicksort":
