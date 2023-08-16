@@ -8,7 +8,8 @@ from tkinter import *
 from algorithms.Algorithm import shortest_path
 from algorithms.Dijkstra import dijkstra
 from algorithms.A_Star import a_star
-from algorithms.Quicksort import quicksort_recursive
+from algorithms.Quicksort import quicksort_recursive, comparisons, swaps
+from algorithms import Quicksort
 from algorithms.Settings import set_global_delay, get_global_delay
 from queue import PriorityQueue
 
@@ -44,19 +45,23 @@ def select_algorithm(event):
     global node_size, sorting_data
     canvas.delete("all")
     if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
+        recursive_maze_and_worst_case.config(text="Create recursive maze")
+        randomize.config(text="Create random walls")
         element_information.set("Node Information \nRow: \nColumn: \nDistance to start: \nDistance to finish: \nAbsolute weight: ")
         node_size = data_amount_slider.get()
         reset("")
         draw_board(main_board)
         data_amount.set("Amount of nodes: " + str((main_board.rows-1)*(main_board.columns-1)))
-        algorithm_information.set("visited nodes: -      path length: -       ")
+        algorithm_information.set("visited nodes: 0      path length: 0       ")
     else:
+        recursive_maze_and_worst_case.config(text="Create worst case")
+        randomize.config(text="Shuffle")
         element_information.set("Element Information \nPosition: \nValue: ")
         sorting_data = list(range(1, 200-data_amount_slider.get()*3))
         random.shuffle(sorting_data)
         draw_sorting_data(sorting_data)
         data_amount.set("Amount of elements: " + str(200-data_amount_slider.get() * 3 - 1))
-        algorithm_information.set("array accesses: -     comparisons: -       swaps: -     ")
+        algorithm_information.set("comparisons: 0       swaps: 0     ")
 
 def draw_board(board):
     for row in range(len(board.nodes)):
@@ -177,7 +182,7 @@ def animate_algorithm ():
             main_board.reset_after_algorithm()
             draw_board(main_board)
             unvisited_nodes = [j for sub in main_board.nodes for j in sub]
-            dijkstra(main_board, unvisited_nodes, canvas, node_size, show_information, color_dictionary)
+            dijkstra(main_board, unvisited_nodes, canvas, node_size, show_information, color_dictionary, algorithm_information, 0)
             draw_board(main_board)
         case "A*":
             main_board.reset_after_algorithm()
@@ -186,32 +191,13 @@ def animate_algorithm ():
             priority_queue = PriorityQueue()
             priority_queue.put((start_node.absolute_weight, start_node.distance_to_finish, start_node))
             open_set_hash = {start_node}
-            a_star(main_board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary)
+            a_star(main_board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary, algorithm_information, 0)
             draw_board(main_board)
         case "Quicksort":
-            quicksort_recursive(sorting_data, 0, len(sorting_data) - 1, canvas, element_ids)
+            quicksort_recursive(sorting_data, 0, len(sorting_data) - 1, canvas, element_ids, algorithm_information)
+            Quicksort.comparisons = 0
+            Quicksort.swaps = 0
             canvas.update()
-
-def animate_maze(board, animation_type):
-    global state
-    if animation_type == "recursive division maze":
-        reset()
-        border = main_board.create_border()
-        #visualize(main_board, main_board.create_maze_board(2, main_board.rows - 3, 2, main_board.columns - 3, border), "grey", "wall")
-
-        maze = main_board.create_maze_board(2, main_board.rows - 3, 2, main_board.columns - 3, border)
-
-        for node in maze:
-            if node.state == "wall":
-                canvas.create_rectangle(node.column * node_size,
-                                        node.row * node_size,
-                                        node.column * node_size + node_size,
-                                        node.row * node_size + node_size,
-                                        fill="grey", outline="black", tags="wall")
-                canvas.update()
-                time.sleep(get_global_delay())
-
-        state = "editable"
 
 def visualize (board, nodes_in_order, color, node_state):
     global state, animation_mode, show_information
@@ -297,16 +283,39 @@ def reset(event):
         draw_board(main_board)
         state = "editable"
         data_amount.set("Amount of nodes: " + str((main_board.rows - 1) * (main_board.columns - 1)))
-        algorithm_information.set("visited nodes: -      path length: -       ")
+        algorithm_information.set("visited nodes: 0      path length: 0       ")
     else:
         select_algorithm("")
 
+def animate_maze():
+    global state, sorting_data
+    if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
+        reset("")
+        border = main_board.create_border()
 
+        maze = main_board.create_maze_board(2, main_board.rows - 3, 2, main_board.columns - 3, border)
 
-def create_random_maze():
-    reset()
-    main_board.create_random_maze_board()
-    draw_board(main_board)
+        for node in maze:
+            if node.state == "wall":
+                canvas.create_rectangle(node.column * node_size,
+                                        node.row * node_size,
+                                        node.column * node_size + node_size,
+                                        node.row * node_size + node_size,
+                                        fill="grey", outline="black", tags="wall")
+                canvas.update()
+                time.sleep(0.001)
+
+        state = "editable"
+    else:
+        canvas.delete("all")
+        sorting_data = number_array = [i for i in range(200 - data_amount_slider.get() * 3, 0, -1)]
+        draw_sorting_data(sorting_data)
+
+def randomize_data():
+    reset("")
+    if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
+        main_board.create_random_maze_board()
+        draw_board(main_board)
 
 selected_node = main_board.nodes[0][0]
 def display_node_information(event):
@@ -388,11 +397,11 @@ data_amount_slider.grid(row=0, column=1, sticky="w")
 reset_button = tkinter.Button(top_row, text="Reset", font=("", 14), bg="white", command=lambda: reset(""))
 reset_button.grid(row=0, column=2, sticky="w", padx=10)
 
-recursive_maze = tkinter.Button(top_row, text="Labyrinth erzeugen", font=("", 14), bg="white", command=lambda: animate_maze(main_board, "recursive division maze"))
-recursive_maze.grid(row=0, column=4, sticky="w", padx=10)
+recursive_maze_and_worst_case = tkinter.Button(top_row, text="", font=("", 14), bg="white", command=lambda: animate_maze())
+recursive_maze_and_worst_case.grid(row=0, column=4, sticky="w", padx=10)
 
-random_maze = tkinter.Button(top_row, text="Zufälliges Labyrinth erzeugen", font=("", 14), bg="white", command=lambda: create_random_maze())
-random_maze.grid(row=0, column=5, sticky="w", padx=10)
+randomize = tkinter.Button(top_row, text="", font=("", 14), bg="white", command=lambda: randomize_data())
+randomize.grid(row=0, column=5, sticky="w", padx=10)
 
 
 # left side

@@ -1,9 +1,10 @@
-import math
 import time
 from algorithms.Settings import get_global_delay
 from Board import shortest_path
 
-def a_star(board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary):
+def a_star(board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary, algorithm_information, visited_nodes):
+    visited_nodes += 1
+    algorithm_information.set("visited nodes: " + str(visited_nodes) + "      path length: 0       ")
     # no possible way to finish
     if priority_queue.empty():
         return
@@ -13,7 +14,7 @@ def a_star(board, priority_queue, open_set_hash, canvas, node_size, show_informa
 
     # check if done
     if current_node == board.finish_node:
-        shortest_path(board, board.finish_node, 0, canvas, node_size, show_information, color_dictionary)
+        shortest_path(board, board.finish_node, 0, canvas, node_size, show_information, color_dictionary, algorithm_information, visited_nodes)
         return
 
 
@@ -36,7 +37,7 @@ def a_star(board, priority_queue, open_set_hash, canvas, node_size, show_informa
             current_node.show_information_of_node(board, current_node, canvas, node_size, color_dictionary)
 
     # recursive step
-    a_star(board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary)
+    a_star(board, priority_queue, open_set_hash, canvas, node_size, show_information, color_dictionary, algorithm_information, visited_nodes)
 
 def update_neighbors(node, board, queue, open_set_hash):
 	neighbors = board.get_neighbors(node)

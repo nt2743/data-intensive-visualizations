@@ -3,7 +3,9 @@ import time
 from algorithms.Settings import get_global_delay
 from Board import shortest_path
 
-def dijkstra (board, unvisited_nodes, canvas, node_size, show_information, color_dictionary):
+def dijkstra (board, unvisited_nodes, canvas, node_size, show_information, color_dictionary, algorithm_information, visited_nodes):
+    visited_nodes += 1
+    algorithm_information.set("visited nodes: " + str(visited_nodes) + "      path length: 0       ")
     unvisited_nodes.sort(key=lambda node: node.distance_to_start)
     current_node = unvisited_nodes.pop(0)
     # no possible way to finish
@@ -12,7 +14,7 @@ def dijkstra (board, unvisited_nodes, canvas, node_size, show_information, color
 
     # check if done
     if current_node == board.finish_node:
-        shortest_path(board, board.finish_node, 0, canvas, node_size, show_information, color_dictionary)
+        shortest_path(board, board.finish_node, 0, canvas, node_size, show_information, color_dictionary, algorithm_information, visited_nodes)
         return
 
     # draw visited node
@@ -34,7 +36,7 @@ def dijkstra (board, unvisited_nodes, canvas, node_size, show_information, color
     update_unvisited_neighbors(current_node, board)
 
     # recursive step
-    dijkstra(board, unvisited_nodes, canvas, node_size, show_information, color_dictionary)
+    dijkstra(board, unvisited_nodes, canvas, node_size, show_information, color_dictionary, algorithm_information, visited_nodes)
 
 def update_unvisited_neighbors(node, board):
     neighbors = board.get_neighbors(node)

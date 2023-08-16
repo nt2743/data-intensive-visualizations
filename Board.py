@@ -132,12 +132,12 @@ class Board:
                     return True
         return False
 
-def shortest_path(board, current_node, length, canvas, node_size, show_information, color_dictionary):
-    length += 1
-    # path_length.set("Weglänge: " + str(length))
+def shortest_path(board, current_node, length, canvas, node_size, show_information, color_dictionary, algorithm_information, visited_nodes):
     previous_node = current_node.previous_node
 
     while previous_node != board.start_node:
+        length += 1
+        algorithm_information.set("visited nodes: " + str(visited_nodes) + "      path length: " + str(length) + "       ")
         previous_node.state = "path"
         canvas.create_rectangle(previous_node.column * node_size, previous_node.row * node_size,
                                 previous_node.column * node_size + node_size,
