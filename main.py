@@ -44,13 +44,18 @@ def select_algorithm(event):
     global node_size, sorting_data
     canvas.delete("all")
     if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
+        element_information.set("Node Information \nRow: \nColumn: \nDistance to start: \nDistance to finish: \nAbsolute weight: ")
         node_size = data_amount_slider.get()
+        reset_board(main_board)
         draw_board(main_board)
+        data_amount.set("Amount of nodes: " + str((main_board.rows-1)*(main_board.columns-1)))
         algorithm_information.set("visited nodes: -      path length: -       ")
     else:
+        element_information.set("Element Information \nPosition: \nValue: ")
         sorting_data = list(range(1, data_amount_slider.get()*3))
         random.shuffle(sorting_data)
         draw_sorting_data(sorting_data)
+        data_amount.set("Amount of elements: " + str(data_amount_slider.get() * 3 - 1))
         algorithm_information.set("array accesses: -     comparisons: -       swaps: -     ")
 
 def draw_board(board):
@@ -72,12 +77,9 @@ def draw_sorting_data(data):
                                 canvas_height,
                                 (element+1) * canvas_width / len(data),
                                 canvas_height - (canvas_height / len(data) * (data[element])),
-                                fill="black", outline="white", tags=data[element])
+                                fill="black", outline="white", tags=(str(element+1), str(data[element])))
         element_ids[element] = element_id
-        #canvas.create_text(element * canvas_width / len(data),
-                                #5,
-                                #font=("",7),
-                                #text=canvas.gettags(element_id))
+        canvas.tag_bind(element_id, "<Enter>", display_element_information)
 
 def change_node_state(node, new_node_state):
     node.state = new_node_state
@@ -304,7 +306,7 @@ def create_random_maze():
 
 selected_node = main_board.nodes[0][0]
 def display_node_information(event):
-    global node_information, selected_node
+    global element_information, selected_node
     try:
         canvas.create_rectangle(selected_node.column * node_size + 1, selected_node.row * node_size + 1,
                                 selected_node.column * node_size + node_size - 1,
@@ -313,13 +315,26 @@ def display_node_information(event):
         current_column = math.floor(event.x / node_size)
 
         selected_node = main_board.nodes[current_row][current_column]
-        node_information.set("Row: " + str(selected_node.row) + "\nColumn: " + str(selected_node.column) + "\nDistance to start: " + str(selected_node.distance_to_start) +
+        element_information.set("Node Information \nRow: " + str(selected_node.row) + "\nColumn: " + str(selected_node.column) + "\nDistance to start: " + str(selected_node.distance_to_start) +
                              "\nDistance to finish: " + str(selected_node.distance_to_finish) +
                              "\nAbsolute weight: " + str(selected_node.absolute_weight))
         canvas.create_rectangle(selected_node.column * node_size + 1, selected_node.row * node_size + 1, selected_node.column * node_size + node_size - 1,
                                 selected_node.row * node_size + node_size - 1, outline="black")
     except:
         return
+
+position = 1
+def display_element_information(event):
+    global element_information, position
+    canvas.itemconfig(element_ids[int(position)], fill="black")
+
+    tags_list = event.widget.itemcget(event.widget.find_withtag(CURRENT)[0], "tags").split()
+
+    value = tags_list[1]
+    position = sorting_data.index(int(value))
+    element_information.set("Element Information \nPosition: " + str(position) + "\nValue: " + str(value))
+
+    canvas.itemconfig(element_ids[int(position)], fill="grey")
 
 canvas.tag_bind("node", "<Button-1>", begin_wall_building)
 canvas.tag_bind("node", "<Motion>", build_walls)
@@ -351,6 +366,7 @@ canvas.tag_bind("start", "<Enter>", display_node_information)
 canvas.tag_bind("finish", "<Enter>", display_node_information)
 canvas.tag_bind("visited", "<Enter>", display_node_information)
 canvas.tag_bind("path", "<Enter>", display_node_information)
+
 canvas.grid(row=1, column=0, columnspan=12)
 
 
@@ -358,9 +374,10 @@ canvas.grid(row=1, column=0, columnspan=12)
 top_row = tkinter.Frame(root)
 top_row.grid(row=0, column=0, columnspan=12, sticky="N")
 
-data_amount_label = tkinter.Label(top_row, text="Amount of data", font=("", 16))
+data_amount = tkinter.StringVar()
+data_amount_label = tkinter.Label(top_row, textvariable=data_amount, font=("", 16))
 data_amount_label.grid(row=0, column=0, sticky="S")
-data_amount_slider = tkinter.Scale(top_row, from_=20, to=50, orient=tkinter.HORIZONTAL, command=select_algorithm)
+data_amount_slider = tkinter.Scale(top_row, from_=20, to=50, orient=tkinter.HORIZONTAL, length=200, showvalue=False, command=select_algorithm)
 data_amount_slider.set(35)
 data_amount_slider.grid(row=0, column=1, sticky="w")
 
@@ -378,10 +395,9 @@ random_maze.grid(row=0, column=5, sticky="w", padx=10)
 
 
 # left side
-node_information = tkinter.StringVar()
-node_information.set("Row: \nColumn: \nDistance to start: \nDistance to finish: ")
-node_information_label = Label(root, textvariable=node_information, bg="#D0D0D0", font=("Helvatical bold",20), justify="left")
-node_information_label.grid(row=2, column=0, rowspan=10, sticky=NW)
+element_information = tkinter.StringVar()
+element_information_label = Label(root, textvariable=element_information, bg="#D0D0D0", font=("Helvatical bold", 20), justify="left")
+element_information_label.grid(row=2, column=0, rowspan=10, sticky=NW)
 
 
 # middle
