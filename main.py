@@ -1,10 +1,11 @@
 import math
 import time
-
-from Board import Board
 import tkinter
 import random
 from tkinter import *
+from tkhtmlview import HTMLLabel
+
+from Board import Board
 from algorithms.Algorithm import shortest_path
 from algorithms.Dijkstra import dijkstra
 from algorithms.A_Star import a_star
@@ -349,6 +350,28 @@ def display_element_information(event):
 
     canvas.itemconfig(element_ids[int(position)], fill="grey")
 
+def show_algorithm_info():
+    popup = tkinter.Toplevel(root)
+    popup.title("Information " + algorithms.get())
+    popup_width = 1400
+    popup_height = 600
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x_position = (screen_width - popup_width) // 2
+    y_position = (screen_height - popup_height) // 2
+
+    popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
+
+    algorithm = algorithms.get()
+    if algorithm == "A*":
+        algorithm = "AStar"
+
+    with open("info_popups/" + algorithm + "_info.html", "r") as file:
+        content = file.read()
+
+    html_label = HTMLLabel(popup, html=content)
+    html_label.pack(fill="both", expand=True)
+
 canvas.tag_bind("node", "<Button-1>", begin_wall_building)
 canvas.tag_bind("node", "<Motion>", build_walls)
 canvas.tag_bind("node", "<ButtonRelease-1>", complete_wall_building)
@@ -387,21 +410,25 @@ canvas.grid(row=1, column=0, columnspan=12)
 top_row = tkinter.Frame(root)
 top_row.grid(row=0, column=0, columnspan=12, sticky="N")
 
+image = tkinter.PhotoImage(file="info_popups/information-mark.png")
+info = tkinter.Button(root, image=image, command=show_algorithm_info)
+info.grid(row=0, column=0)
+
 data_amount = tkinter.StringVar()
 data_amount_label = tkinter.Label(top_row, textvariable=data_amount, font=("", 16))
-data_amount_label.grid(row=0, column=0, sticky="S")
+data_amount_label.grid(row=0, column=1, sticky="S")
 data_amount_slider = tkinter.Scale(top_row, from_=50, to=20, orient=tkinter.HORIZONTAL, length=200, showvalue=False, command=reset)
 data_amount_slider.set(35)
-data_amount_slider.grid(row=0, column=1, sticky="w")
+data_amount_slider.grid(row=0, column=2, sticky="w")
 
 reset_button = tkinter.Button(top_row, text="Reset", font=("", 14), bg="white", command=lambda: reset(""))
-reset_button.grid(row=0, column=2, sticky="w", padx=10)
+reset_button.grid(row=0, column=3, sticky="w", padx=10)
 
 recursive_maze_and_worst_case = tkinter.Button(top_row, text="", font=("", 14), bg="white", command=lambda: animate_maze())
-recursive_maze_and_worst_case.grid(row=0, column=4, sticky="w", padx=10)
+recursive_maze_and_worst_case.grid(row=0, column=5, sticky="w", padx=10)
 
 randomize = tkinter.Button(top_row, text="", font=("", 14), bg="white", command=lambda: randomize_data())
-randomize.grid(row=0, column=5, sticky="w", padx=10)
+randomize.grid(row=0, column=6, sticky="w", padx=10)
 
 
 # left side
