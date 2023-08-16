@@ -46,15 +46,16 @@ def select_algorithm(event):
     if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
         element_information.set("Node Information \nRow: \nColumn: \nDistance to start: \nDistance to finish: \nAbsolute weight: ")
         node_size = data_amount_slider.get()
+        reset("")
         draw_board(main_board)
         data_amount.set("Amount of nodes: " + str((main_board.rows-1)*(main_board.columns-1)))
         algorithm_information.set("visited nodes: -      path length: -       ")
     else:
         element_information.set("Element Information \nPosition: \nValue: ")
-        sorting_data = list(range(1, data_amount_slider.get()*3))
+        sorting_data = list(range(1, 200-data_amount_slider.get()*3))
         random.shuffle(sorting_data)
         draw_sorting_data(sorting_data)
-        data_amount.set("Amount of elements: " + str(data_amount_slider.get() * 3 - 1))
+        data_amount.set("Amount of elements: " + str(200-data_amount_slider.get() * 3 - 1))
         algorithm_information.set("array accesses: -     comparisons: -       swaps: -     ")
 
 def draw_board(board):
@@ -285,15 +286,21 @@ def skip_animation():
 
     set_global_delay(0)
 
-def reset():
-    global main_board, board_rows, board_columns, state
+def reset(event):
+    global main_board, board_rows, board_columns, state, node_size
     if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
         canvas.delete("all")
+        node_size = data_amount_slider.get()
         board_rows = math.floor(canvas_height / node_size)
         board_columns = math.floor(canvas_width / node_size)
         main_board = Board(board_rows, board_columns)
+        draw_board(main_board)
         state = "editable"
-    select_algorithm("")
+        data_amount.set("Amount of nodes: " + str((main_board.rows - 1) * (main_board.columns - 1)))
+        algorithm_information.set("visited nodes: -      path length: -       ")
+    else:
+        select_algorithm("")
+
 
 
 def create_random_maze():
@@ -374,11 +381,11 @@ top_row.grid(row=0, column=0, columnspan=12, sticky="N")
 data_amount = tkinter.StringVar()
 data_amount_label = tkinter.Label(top_row, textvariable=data_amount, font=("", 16))
 data_amount_label.grid(row=0, column=0, sticky="S")
-data_amount_slider = tkinter.Scale(top_row, from_=20, to=50, orient=tkinter.HORIZONTAL, length=200, showvalue=False, command=select_algorithm)
+data_amount_slider = tkinter.Scale(top_row, from_=50, to=20, orient=tkinter.HORIZONTAL, length=200, showvalue=False, command=reset)
 data_amount_slider.set(35)
 data_amount_slider.grid(row=0, column=1, sticky="w")
 
-reset_button = tkinter.Button(top_row, text="Reset", font=("", 14), bg="white", command=reset)
+reset_button = tkinter.Button(top_row, text="Reset", font=("", 14), bg="white", command=lambda: reset(""))
 reset_button.grid(row=0, column=2, sticky="w", padx=10)
 
 recursive_maze = tkinter.Button(top_row, text="Labyrinth erzeugen", font=("", 14), bg="white", command=lambda: animate_maze(main_board, "recursive division maze"))
