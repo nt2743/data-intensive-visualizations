@@ -46,7 +46,6 @@ def select_algorithm(event):
     if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
         element_information.set("Node Information \nRow: \nColumn: \nDistance to start: \nDistance to finish: \nAbsolute weight: ")
         node_size = data_amount_slider.get()
-        reset_board(main_board)
         draw_board(main_board)
         data_amount.set("Amount of nodes: " + str((main_board.rows-1)*(main_board.columns-1)))
         algorithm_information.set("visited nodes: -      path length: -       ")
@@ -195,7 +194,7 @@ def animate_algorithm ():
 def animate_maze(board, animation_type):
     global state
     if animation_type == "recursive division maze":
-        reset_board(board)
+        reset()
         border = main_board.create_border()
         #visualize(main_board, main_board.create_maze_board(2, main_board.rows - 3, 2, main_board.columns - 3, border), "grey", "wall")
 
@@ -286,21 +285,19 @@ def skip_animation():
 
     set_global_delay(0)
 
-def reset_board(board):
+def reset():
     global main_board, board_rows, board_columns, state
-    canvas.delete("all")
-    board_rows = math.floor(canvas_height / node_size)
-    board_columns = math.floor(canvas_width / node_size)
-    main_board = Board(board_rows, board_columns)
-    draw_board(main_board)
-    state = "editable"
+    if algorithms.get() == "Dijkstra" or algorithms.get() == "A*":
+        canvas.delete("all")
+        board_rows = math.floor(canvas_height / node_size)
+        board_columns = math.floor(canvas_width / node_size)
+        main_board = Board(board_rows, board_columns)
+        state = "editable"
+    select_algorithm("")
 
-def delete_paths(board):
-    board.reset_after_algorithm()
-    draw_board(main_board)
 
 def create_random_maze():
-    reset_board(main_board)
+    reset()
     main_board.create_random_maze_board()
     draw_board(main_board)
 
@@ -381,11 +378,8 @@ data_amount_slider = tkinter.Scale(top_row, from_=20, to=50, orient=tkinter.HORI
 data_amount_slider.set(35)
 data_amount_slider.grid(row=0, column=1, sticky="w")
 
-clear_board = tkinter.Button(top_row, text="Zurücksetzen", font=("", 14), bg="white", command=lambda: reset_board(main_board))
-clear_board.grid(row=0, column=2, sticky="w", padx=10)
-
-clear_paths = tkinter.Button(top_row, text="Wege entfernen", font=("", 14), bg="white", command=lambda: delete_paths(main_board))
-clear_paths.grid(row=0, column=3, sticky="w", padx=10)
+reset_button = tkinter.Button(top_row, text="Reset", font=("", 14), bg="white", command=reset)
+reset_button.grid(row=0, column=2, sticky="w", padx=10)
 
 recursive_maze = tkinter.Button(top_row, text="Labyrinth erzeugen", font=("", 14), bg="white", command=lambda: animate_maze(main_board, "recursive division maze"))
 recursive_maze.grid(row=0, column=4, sticky="w", padx=10)
