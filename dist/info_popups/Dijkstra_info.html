@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <h2>Dijkstra Visualization</h2>
+    <h3>General</h3>
+    <p>
+        This is an interactive visualization of the Dijkstra Algorithm. On the very top are some buttons to configure the nodes
+        of the board. There is also a scale, where the amount of nodes is adjustable. <br/>
+        Right below that, the visualization of the board that contains the nodes is shown. By hovering over a node, the nodes position
+        is shown in the bottom left corner of the window. The distance to start and finish, as well as the absolute cost can also be
+        seen, once they have been calculated during the algorithm. <br/>
+        In the middle, the desired algorithm can be chosen and started to visualize. Right above that, there is some information about the amount
+        of steps the algorithm has done so far.<br/>
+        On the bottom right, the delay of the visualization can be seen and configured by using the shown scale. There is also the option to skip
+        the ongoing visualization.
+    </p>
+    <h3>The Dijkstra Algorithm</h3>
+    <h4>Purpose and Use Cases <sup>1</sup></h4>
+    <p>
+        With Dijkstra's Algorithm, you can find the shortest path between a start and an end node. It is implemented here with all nodes having a
+        cost of 1 to their adjacent nodes (not diagonally). This algorithm is used in GPS devices to find the shortest path between the current
+        location and the destination. It has broad applications in industry, specially in domains that require modeling networks.
+    </p>
+    <h4>Basics <sup>1</sup></h4>
+    <ul>
+        <li>
+            Dijkstra's Algorithm basically starts at the start node and it analyzes the graph to find the shortest
+            path between that node and the end node in the graph.
+        </li>
+        <li>
+            The algorithm keeps track of the currently known shortest distance from each node to the source node and it updates these values
+            if it finds a shorter path.
+        </li>
+        <li>
+            Once the algorithm has found the shortest path between the source node and another node, that node is marked as "visited" and
+            added to the path.
+        </li>
+        <li>
+            The process continues until all we reach the end node. This way, we have a path that connects the start node to the end node
+            following the shortest path possible to reach each node.
+        </li>
+    </ul>
+    <h4>Requirements <sup>1</sup></h4>
+    <p>
+        Dijkstra's Algorithm can only work with graphs that have positive weights. This is because, during the process, the weights of the
+        edges have to be added to find the shortest path. If there is a negative weight in the graph, then the algorithm will not work
+        properly. Once a node has been marked as "visited", the current path to that node is marked as the shortest path to reach that node.
+        And negative weights can alter this if the total weight can be decremented after this step has occurred.
+    </p>
+    <h4>Time Complexity <sup>2</sup></h4>
+    <p>
+        Time complexity of Dijkstra's algorithm is O(V<sup>2</sup>) where V is the number of vertices in the graph. It can be explained as
+        below:
+    </p>
+    <ol>
+        <li>
+            First thing we need to do is find the unvisited vertex with the smallest path. For that we require O(V) time as we need check all
+            the vertices.
+        </li>
+        <li>
+            Now for each vertex selected as above, we need to relax its neighbours which means to update each neighbours path to the smaller
+            value between its current path or to the newly found. The time required to relax one neighbour comes out to be of order of O(1)
+            (constant time).
+        </li>
+        <li>
+            For each vertex we need to relax all of its neighbours, and a vertex can have at most V-1 neighbours, so the time required to
+            update all neighbours of a vertex comes out to be [O(V) * O(1)] = O(V)
+        </li>
+    </ol>
+    <p>So now following the above conditions, we get:</p>
+    <ul>
+        <li>Time for visiting all vertices <b>= O(V)</b></li>
+        <li>Time required for processing one vertex <b>= O(V)</b></li>
+        <li>Time required for visiting and processing all the vertices <b>= O(V) * O(V) = O(V<sup>2</sup>)</b></li>
+    </ul>
+    <p style="color: #000000">.</p>
+    <p>
+        <sup>1</sup> Explanations in this section are from: Navone, E. C. (2020, September 28). Dijkstra’s Shortest Path Algorithm—A Detailed
+        and Visual Introduction. FreeCodeCamp.Org.
+        <a href="https://www.freecodecamp.org/news/dijkstras-shortest-path-algorithm-visual-introduction/"
+            >https://www.freecodecamp.org/news/dijkstras-shortest-path-algorithm-visual-introduction/</a
+        >
+        (last accessed: 20.03.2023)
+    </p>
+    <p>
+        <sup>2</sup> Explanations in this section are from: Pandey, M. (2021, December 20). Dijkstra Algorithm. Scaler Topics.
+        <a href="https://www.scaler.com/topics/data-structures/dijkstra-algorithm/"
+            >https://www.scaler.com/topics/data-structures/dijkstra-algorithm/</a
+        >
+        (last accessed: 20.03.2023)
+    </p>
+</body>
+</html>

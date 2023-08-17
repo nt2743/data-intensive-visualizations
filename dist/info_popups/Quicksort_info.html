@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <h2>Quicksort Visualization</h2>
+    <p>
+        This is an interactive visualization of the Quicksort Algorithm. On the very top are some buttons to configure the elements to be sorted.
+        There is also a scale, where the amount of elements is adjustable. <br/>
+        Right below that, the visualization of the elements to be sorted are shown. By hovering over the elements, the position and
+        the exact value of them are shown in the bottom left corner of the window. <br/>
+        In the middle, the desired algorithm can be chosen and started to visualize. Right above that, there is some information about the amount
+        of steps the algorithm has done so far.<br/>
+        On the bottom right, the delay of the visualization can be seen and configured by using the shown scale. There is also the option to skip
+        the ongoing visualization.
+    </p>
+    <h4>General Information <sup>1</sup></h4>
+    <p>
+        QuickSort is a sorting algorithm based on the Divide and Conquer algorithm that picks an element as a pivot and partitions the given array
+        around the picked pivot by placing the pivot in its correct position in the sorted array.
+    </p>
+    <h4>Steps </h4>
+    <ul>
+        <li>Select a pivot element from the array.</li>
+        <li>Rearrange the array so that elements smaller than the pivot are on the left, and elements larger than the pivot are on the right.</li>
+        <li>Apply Quicksort recursively to the left and right partitions and combine the sorted partitions to get the final sorted array.</li>
+    </ul>
+    <h4>How does the partitioning work? <sup>1</sup></h4>
+    <p>
+        The target of partitions is to place the pivot (any element can be chosen to be a pivot) at its correct position in the sorted array and put
+        all smaller elements to the left of the pivot, and all greater elements to the right of the pivot. <br> <br>
+        There are different choices for picking pivots, which can result in different effiencies depending on the input data.
+        <ul>
+            <li>Always pick the last element as a pivot (implemented here)</li>
+            <li>Always pick the first element as a pivot</li>
+            <li>Pick a random element as a pivot.</li>
+            <li>Pick the middle as the pivot.</li>
+        </ul>
+    </p>
+    <h4>Time Complexity <sup>2</sup></h4>
+    <ul>
+        <li>
+            <b>Best case:  O(n*logn) </b><br>
+            This happens if we pick the median of the array as the pivot element every time. The size of subarrays will be half the size of the
+            original array.
+        </li>
+        <li>
+            <b>Worst case:  O(n^2) </b><br>
+            This happens if we pick the largest or the smallest element of the array as the pivot element every time. The size of the subarray
+            after partitioning will be n-1 and 1.
+        </li>
+        <li>
+            <b>Average case: O(n*logn) </b><br>
+            This is the average time taken for all n! permutations of n elements.
+        </li>
+    </ul>
+    <h4>Advantages of Quicksort <sup>1</sup></h4>
+    <ul>
+        <li>
+            <b>Easier to solve problems</b>, because it is a divide-and-conquer algorithm
+        </li>
+        <li>
+            <b>Efficient</b> on <b>large</b> data sets
+        </li>
+        <li>
+            <b>Low overhead</b>, as it only requires a small amount of memory to function
+        </li>
+    </ul>
+    <h4>Disadvantages of Quicksort <sup>1</sup></h4>
+    <ul>
+        <li> <b>Worst-case time complexity of O(N<sup>2</sup>)</b>, which occurs when the pivot is chosen poorly </li>
+        <li> <b>Inefficient</b> on <b>small</b> data sets </li>
+        <li>
+            <b>Not stable</b>, meaning that if two elements have the same key, their relative order will not be preserved in the sorted output
+            in case of quick sort, because here we are swapping elements according to the pivot's position (without considering their original positions)
+        </li>
+    </ul>
+    <p style="color: #000000">.</p>
+    <p>
+        <sup>1</sup> Explanations in this section are from: Quicksort. (2023, August 09). GeeksforGeeks.
+        <a href="https://www.geeksforgeeks.org/quick-sort/">https://www.geeksforgeeks.org/quick-sort/</a> (last accessed: 16.08.2023)
+    </p>
+    <p>
+        <sup>2</sup> Explanations in this section are from: Quick Sort Algorithm: Explanation, Implementation, and Complexity. (2023, August 08).
+        Interview Kickstart.
+        <a href="https://www.interviewkickstart.com/learn/quick-sort">https://www.interviewkickstart.com/learn/quick-sort</a> (last accessed:
+        16.08.2023)
+    </p>
+</body>
+</html>

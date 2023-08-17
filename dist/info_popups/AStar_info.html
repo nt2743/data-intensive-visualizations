@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <h2>A* Visualization</h2>
+    <h3>General</h3>
+    <p>
+        This is an interactive visualization of the A* Algorithm. On the very top are some buttons to configure the nodes
+        of the board. There is also a scale, where the amount of nodes is adjustable. <br/>
+        Right below that, the visualization of the board that contains the nodes is shown. By hovering over a node, the nodes position
+        is shown in the bottom left corner of the window. The distance to start and finish, as well as the absolute cost can also be
+        seen, once they have been calculated during the algorithm. <br/>
+        In the middle, the desired algorithm can be chosen and started to visualize. Right above that, there is some information about the amount
+        of steps the algorithm has done so far.<br/>
+        On the bottom right, the delay of the visualization can be seen and configured by using the shown scale. There is also the option to skip
+        the ongoing visualization.
+    </p>
+    <h3>The A* Algorithm</h3>
+    <h4>Purpose and Use Cases <sup>1</sup></h4>
+    <p>
+        A* is a searching algorithm that is used to find the shortest path between a start and an end node. It is implemented here with all nodes
+        having a cost of 1 to their adjacent nodes (not diagonally). It is an extension of Dijkstra's shortest path algorithm. The extension here
+        is that we use a heuristic function that provides additional information regarding how far away from the goal node we are. The A* algorithm
+        is widely used in various domains for pathfinding and optimization problems. It has applications in robotics, video games, route planning,
+        logistics, and artificial intelligence. In robotics, A* helps robots navigate obstacles and find optimal paths. In video games, it enables
+        NPCs to navigate game environments intelligently. Route planning applications use A* to find the shortest or fastest routes between locations.
+        Logistics industries utilize A* for vehicle routing and scheduling. A* is also employed in AI systems, such as natural language processing
+        and machine learning, to optimize decision-making processes.
+    </p>
+    <h4>Basics <sup>1</sup></h4>
+    <ul>
+        <li>
+            A* basically starts at the node that you choose (the start node) and it analyzes the graph to find the shortest
+            path between that node and the end node.
+        </li>
+        <li>
+            The algorithm keeps track of the currently known shortest distance from each node to the start node and it updates these values
+            if it finds a shorter path.
+        </li>
+        <li>
+            At each step, it picks the node with the smallest value of f (the sum of g and h) and processes that node.
+        </li>
+        <li>
+            g and h are defined as:
+        </li>
+        <ul>
+            <li>
+                g is the the currently known shortest distance from a node to the start node and the value gets updated if the algorithm finds
+                a shorter path.
+            </li>
+            <li>
+                h is the heuristic, which is the estimation of the distance from a node to the end node. This implementation uses the euclidian
+                distance, which is used very commonly, as well as the manhattan distance.
+            </li>
+        </ul>
+        <li>
+            Processing the node means, that the Algorithm calculates the cost to all of the nodes immediate neighboring nodes and chooses the one
+            incurring the least cost.
+        </li>
+        <li>
+            The process continues until we have reached the end node, so that we have found the shortest path to it or at least the path with the
+            lowest cost.
+        </li>
+    </ul>
+    <h4>Requirements <sup>2</sup></h4>
+    <p>
+        A*'s Algorithm can only work with graphs that have positive weights. This is because, during the process, the weights of the
+        edges have to be added to find the shortest path. If there is a negative weight in the graph, then the algorithm will not work
+        properly. Once a node has been marked as "visited", the current path to that node is marked as the shortest path to reach that node.
+        And negative weights can alter this if the total weight can be decremented after this step has occurred.
+    </p>
+    <h4>Time Complexity</h4>
+    <p>
+        The time complexity of the A* algorithm is influenced by several factors, including the characteristics of the graph, the heuristics
+        used, and the data structures employed. In its worst-case scenario, A* has a time complexity of <b>O(V<sup>2</sup>)</b>, where V is
+        the number of vertices in the graph. This can be explained as follows:
+    </p>
+    <ol>
+        <li>
+            First, we need to find the unvisited vertex with the smallest estimated total cost (heuristic + actual cost) to reach the end node.
+            This requires sorting the unvisited vertices based on their estimated total cost, which takes <b>O(V log V)</b> time using efficient
+            data structures like binary heaps.
+        </li>
+        <li>
+            For each selected vertex, we need to relax its neighbors, updating their shortest distance and total cost values. This involves
+            iterating through the neighbors and performing constant-time updates, which takes <b>O(V)</b> time.
+        </li>
+    </ol>
+    <p>Considering the above conditions, we get:</p>
+    <ul>
+        <li>Time for selecting the vertex with the smallest estimated total cost <b>= O(V log V)</b></li>
+        <li>Time required for relaxing neighbors for each selected vertex <b>= O(V)</b></li>
+        <li>Overall time complexity <b>= O(V log V) * O(V) = O(V<sup>2</sup> log V)</b></li>
+    </ul>
+    <p>
+        However, in practice, with proper data structures and effective heuristics, the A* algorithm can often achieve significantly better
+        performance than its worst-case time complexity suggests.
+    </p>
+    Please note that the provided code snippet is not an exact match for the pseudocode you mentioned earlier, so I've provided a general
+    explanation of the time complexity that fits the A* algorithm logic in your code.
+    <p style="color: #000000">.</p>
+    <p>
+        <sup>1</sup> Explanations in this section are from: Ravikiran A S (2023, August 9). A* Algorithm Concepts and Implementation
+        <a href="https://www.simplilearn.com/tutorials/artificial-intelligence-tutorial/a-star-algorithm"
+            >https://www.simplilearn.com/tutorials/artificial-intelligence-tutorial/a-star-algorithm</a
+        >
+        (last accessed: 10.08.2023)
+    </p>
+    <p>
+        <sup>2</sup> Explanations in this section are from: Navone, E. C. (2020, September 28). Dijkstra’s Shortest Path Algorithm—A Detailed
+        and Visual Introduction. FreeCodeCamp.Org.
+        <a href="https://www.freecodecamp.org/news/dijkstras-shortest-path-algorithm-visual-introduction/"
+            >https://www.freecodecamp.org/news/dijkstras-shortest-path-algorithm-visual-introduction/</a
+        >
+        (last accessed: 10.08.2023)
+    </p>
+</body>
+</html>
