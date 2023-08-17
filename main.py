@@ -6,12 +6,11 @@ from tkinter import *
 from tkhtmlview import HTMLLabel
 
 from Board import Board
-from algorithms.Algorithm import shortest_path
 from algorithms.Dijkstra import dijkstra
 from algorithms.A_Star import a_star
-from algorithms.Quicksort import quicksort_recursive, comparisons, swaps
+from algorithms.Quicksort import quicksort_recursive
 from algorithms import Quicksort
-from algorithms.Settings import set_global_delay, get_global_delay
+from algorithms.Settings import set_global_delay
 from queue import PriorityQueue
 
 root = tkinter.Tk()
@@ -200,47 +199,6 @@ def animate_algorithm ():
             Quicksort.swaps = 0
             canvas.update()
 
-def visualize (board, nodes_in_order, color, node_state):
-    global state, animation_mode, show_information
-    node = nodes_in_order.pop(0)
-    state = "visualizing"
-    if node.state == node_state:
-        canvas.create_rectangle(node.column * node_size, node.row * node_size, node.column * node_size + node_size, node.row * node_size + node_size, fill=color, outline="black", tags=node_state)
-        # shows the current node weights when animating an algorithm
-        if node.state == "node" and show_information:
-            canvas.create_text(node.column * node_size + (node_size / 4), node.row * node_size + (node_size / 5),
-                        font=("", math.floor(node_size * 10 / 36)), text=node.distance_to_start)
-            canvas.create_text(node.column * node_size + (node_size * 3 / 4), node.row * node_size + (node_size / 5),
-                        font=("", math.floor(node_size * 10 / 36)), text=node.distance_to_finish)
-            canvas.create_text(node.column * node_size + (node_size / 2), node.row * node_size + (node_size * 2 / 3),
-                        font=("", math.floor(node_size / 2)), text=node.absolute_weight)
-            neighbors = board.get_neighbors(node)
-            unvisited_neighbors = filter(lambda neigh: not neigh.state == "wall", neighbors)
-            for neighbor in unvisited_neighbors:
-                canvas.create_text(neighbor.column * node_size + (node_size / 4), neighbor.row * node_size + (node_size / 5),
-                                   font=("", math.floor(node_size * 10 / 36)), text=neighbor.distance_to_start)
-                canvas.create_text(neighbor.column * node_size + (node_size * 3 / 4),
-                                   neighbor.row * node_size + (node_size / 5),
-                                   font=("", math.floor(node_size * 10 / 36)), text=neighbor.distance_to_finish)
-                canvas.create_text(neighbor.column * node_size + (node_size / 2),
-                                   neighbor.row * node_size + (node_size * 2 / 3),
-                                   font=("", math.floor(node_size / 2)), text=neighbor.absolute_weight)
-
-    if len(nodes_in_order) > 0:
-        if animation_mode != "step by step" or color == "yellow":
-            if animation_mode == "complete":
-                root.after(animation_speed_slider.get(), visualize, board, nodes_in_order, color, node_state)
-            else:
-                root.after(0, visualize, board, nodes_in_order, color, node_state)
-    else:
-        if color == "cyan":
-            print("bla")
-            nodes_shortest_path = shortest_path(board, board.finish_node)
-            visualize(board, nodes_shortest_path, "yellow", "node")
-        state = "visualized"
-        if animation_mode == "skip":
-            animation_mode = "complete"
-
 def set_show_information():
     global animation_mode, show_information
     if show_information:
@@ -252,25 +210,11 @@ def set_show_information():
         show_information = True
         draw_board(main_board)
 
-animation_mode = "complete"
-def set_animation_mode():
-    global animation_mode, debug_button_text
-    if animation_mode == "step by step":
-        debug_button_text.set("Visualisierung: komplett")
-        animation_mode = "complete"
-    else:
-        debug_button_text.set("Visualisierung: Schritt für Schritt")
-        animation_mode = "step by step"
-
 def update_delay(new_delay):
     set_global_delay(float(new_delay) / 1000)
     delay_information.set("delay: " + new_delay + "ms")
 
 def skip_animation():
-    global animation_mode
-    if animation_mode == "complete":
-        animation_mode = "skip"
-
     set_global_delay(0)
 
 def reset(event):
@@ -410,7 +354,7 @@ canvas.grid(row=1, column=0, columnspan=12)
 top_row = tkinter.Frame(root)
 top_row.grid(row=0, column=0, columnspan=12, sticky="N")
 
-image = tkinter.PhotoImage(file="info_popups/information-mark.png")
+image = tkinter.PhotoImage(file="information-mark.png")
 info = tkinter.Button(root, image=image, command=show_algorithm_info)
 info.grid(row=0, column=0)
 
