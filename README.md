@@ -1,2 +1,2 @@
-# data intensive algorithm visualization
-visualizes different pathfinding algorithms
+# data intensive algorithm visualizations
+visualizes different algorithms
