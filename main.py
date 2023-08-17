@@ -15,11 +15,11 @@ from queue import PriorityQueue
 
 root = tkinter.Tk()
 root.title("Pathfinding Visualization")
-root.state("zoomed") # window full-screen
+#root.state("zoomed") # window full-screen
 state = "editable" # represents the current program state
 
-canvas_height = 550
-canvas_width = 1530
+canvas_height = root.winfo_screenheight()/3*2
+canvas_width = root.winfo_screenwidth()
 canvas = Canvas(root, height=canvas_height, width=canvas_width)
 
 # pathfinding variables
@@ -303,6 +303,8 @@ def show_algorithm_info():
     screen_height = root.winfo_screenheight()
     x_position = (screen_width - popup_width) // 2
     y_position = (screen_height - popup_height) // 2
+
+    print(root.winfo_screenwidth())
 
     popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
 
